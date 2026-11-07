@@ -83,3 +83,4 @@ const TEMPLATE_CONFIG = {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = TEMPLATE_CONFIG;
 }
+
