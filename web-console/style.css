@@ -350,6 +350,138 @@ body {
   font-weight: 600;
 }
 
+/* Navigation Tabs */
+.nav-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid var(--border-light);
+  margin-bottom: 20px;
+}
+
+.nav-tab {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s ease;
+}
+
+.nav-tab:hover {
+  color: var(--primary-light);
+}
+
+.nav-tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+/* Question Heatmap */
+.heatmap-container {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.heatmap-cell {
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 10px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.heatmap-cell:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.heatmap-cell .q-num {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+.heatmap-cell .q-key {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.heatmap-cell .q-p {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.heatmap-cell .q-d {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Distractor Breakdown Bars */
+.distractor-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.distractor-label {
+  width: 70px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.distractor-bar-wrap {
+  flex: 1;
+  background: var(--bg-surface-alt);
+  border-radius: 4px;
+  height: 20px;
+  overflow: hidden;
+}
+
+.distractor-bar {
+  height: 100%;
+  background: var(--primary-light);
+  transition: width 0.3s ease;
+}
+
+.distractor-bar.correct {
+  background: #10B981;
+}
+
+.distractor-count {
+  width: 80px;
+  font-size: 12px;
+  text-align: right;
+  color: var(--text-muted);
+}
+
 /* Footer Credit */
 .app-footer {
   background-color: var(--bg-surface);
@@ -376,3 +508,4 @@ body {
   color: var(--text-muted);
   margin-top: 4px;
 }
+
