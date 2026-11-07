@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบบริหารจัดการผลการสอบ OMR — เว็บคอนโซลกลาง</title>
+  
+  <!-- Google Fonts: Sarabun & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Google Identity Services (GIS) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-group">
+        <div class="brand-icon">📊</div>
+        <div>
+          <h1 class="brand-title">ระบบบริหารจัดการผลการสอบ OMR</h1>
+          <p class="brand-subtitle">เว็บคอนโซลวิเคราะห์และติดตามผลการสอบระดับมาตรฐาน (Architecture v6)</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <a href="https://docs.google.com/spreadsheets/d/1KcL20IBw5r36ODy9lcsBal6SmeZ9rRitctotZfwJKH4/edit" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           class="btn btn-outline" 
+           title="เปิด Google Sheets ในแท็บใหม่">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          Google Sheets
+        </a>
+
+        <!-- GIS Auth Button -->
+        <button id="btnAuth" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/>
+          </svg>
+          <span id="authBtnText">ลงชื่อเข้าใช้ Google</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="app-main">
+    
+    <!-- Auth & Configuration Banner (Shown if not signed in) -->
+    <section id="authBanner" class="auth-banner">
+      <div class="auth-banner-content">
+        <div class="auth-banner-icon">🔐</div>
+        <div class="auth-banner-text">
+          <h3>การเข้าถึงข้อมูลแบบ Read-Only ด้วย Google Identity Services</h3>
+          <p>คอนโซลนี้ทำงานแบบ Static บน GitHub Pages และอ่านข้อมูลตรงจาก Google Sheets API v4 ในหน่วยความจำ โดยไม่มีการส่งผ่านเซิร์ฟเวอร์คนกลาง</p>
+          <div class="client-id-input-group">
+            <input type="text" id="inputClientId" placeholder="ระบุ Google OAuth 2.0 Client ID (หรือใช้ค่าเริ่มต้นที่ตั้งไว้)" class="input-text">
+            <button id="btnSaveClientId" class="btn btn-secondary">บันทึก & เข้าสู่ระบบ</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KPI Summary Cards -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">นักเรียนทั้งหมด</div>
+        <div class="kpi-value" id="kpiTotalStudents">-</div>
+        <div class="kpi-trend">ทุกห้องเรียนที่ลงทะเบียน</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">สแกนแล้ว (เข้าสอบ)</div>
+        <div class="kpi-value text-success" id="kpiScanned">-</div>
+        <div class="kpi-trend" id="kpiAttendanceRate">อัตราการเข้าสอบ -%</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">ขาดสอบ</div>
+        <div class="kpi-value text-warning" id="kpiAbsent">-</div>
+        <div class="kpi-trend">ยังไม่พบผลการสแกน</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">คะแนนเฉลี่ยรวม</div>
+        <div class="kpi-value text-primary" id="kpiAvgScore">-</div>
+        <div class="kpi-trend" id="kpiMaxMin">สูงสุด: - | ต่ำสุด: -</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">อัตราการสอบผ่าน</div>
+        <div class="kpi-value text-success" id="kpiPassRate">-</div>
+        <div class="kpi-trend" id="kpiPassCount">ผ่านเกณฑ์ - คน</div>
+      </div>
+    </section>
+
+    <!-- Controls Bar -->
+    <section class="controls-card">
+      <div class="controls-left">
+        <div class="search-box">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="searchInput" placeholder="ค้นหาตามชื่อห้อง หรือเลขห้อง..." class="search-input">
+        </div>
+
+        <select id="selectExamFilter" class="select-dropdown">
+          <option value="ALL">ข้อสอบทั้งหมด</option>
+          <option value="EXAM_001" selected>EXAM_001 (ฟิสิกส์ กลางภาค)</option>
+          <option value="EXAM_002">EXAM_002 (วิทยาศาสตร์กายภาพ)</option>
+        </select>
+      </div>
+
+      <div class="controls-right">
+        <button id="btnRefresh" class="btn btn-outline" title="ดึงข้อมูลล่าสุดจาก Sheets">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+          รีเฟรชข้อมูล
+        </button>
+
+        <button id="btnExportCSV" class="btn btn-outline" title="ส่งออกข้อมูลเป็น CSV">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          ส่งออก CSV
+        </button>
+      </div>
+    </section>
+
+    <!-- Master Index Table Section -->
+    <section class="table-container">
+      <div class="table-header-bar">
+        <h2>ภาพรวมผลการสอบจำแนกรายห้องเรียน (Index Overview)</h2>
+        <span class="badge" id="badgeLastUpdate">อัปเดต: รอการเชื่อมต่อ</span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table" id="indexTable">
+          <thead>
+            <tr>
+              <th>ลำดับ</th>
+              <th>ห้องเรียน / ชั้นเรียน</th>
+              <th>จำนวนนักเรียน</th>
+              <th>เข้าสอบแล้ว</th>
+              <th>ขาดสอบ</th>
+              <th>อัตราเข้าสอบ</th>
+              <th>คะแนนเฉลี่ย</th>
+              <th>คะแนนสูงสุด</th>
+              <th>คะแนนต่ำสุด</th>
+              <th>ผ่านเกณฑ์</th>
+              <th>ร้อยละที่ผ่าน</th>
+              <th>การจัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="indexTableBody">
+            <tr>
+              <td colspan="12" class="text-center py-8 text-muted">
+                กำลังรอการลงชื่อเข้าใช้ Google เพื่อดึงข้อมูลสดจาก Google Sheets...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Room Detail Modal / Drawer -->
+    <div id="roomModal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div>
+            <h3 id="modalRoomTitle">รายละเอียดคะแนนห้อง: ม.5/1</h3>
+            <p id="modalRoomSubtitle" class="text-muted text-sm">รายชื่อนักเรียนและคะแนนการสอบรายบุคคล</p>
+          </div>
+          <button id="btnCloseModal" class="btn-close" aria-label="Close">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="table-responsive">
+            <table class="data-table" id="roomDetailTable">
+              <thead>
+                <tr>
+                  <th>เลขที่</th>
+                  <th>รหัสนักเรียน</th>
+                  <th>ชื่อ-นามสกุล</th>
+                  <th>คะแนนที่ได้</th>
+                  <th>คะแนนเต็ม</th>
+                  <th>ร้อยละ (%)</th>
+                  <th>สถานะ</th>
+                  <th>เวลาสแกน</th>
+                  <th>Scan ID</th>
+                </tr>
+              </thead>
+              <tbody id="roomDetailTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="btnPrintRoom" class="btn btn-outline">🖨️ พิมพ์ใบคะแนน</button>
+          <button id="btnCloseModalFooter" class="btn btn-secondary">ปิดหน้าต่าง</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Prominent Credit Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p class="footer-credit">จัดทำโดย ครูสุวรรณษา เดชรักษา</p>
+      <p class="footer-subtext">ระบบตรวจข้อสอบ OMR ไฮบริด (Architecture Specification v6) | สเปรดชีตเป้าหมาย: 1KcL20IBw5r36ODy9lcsBal6SmeZ9rRitctotZfwJKH4</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

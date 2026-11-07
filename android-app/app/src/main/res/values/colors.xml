@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand Primary Colors (High-Contrast Navy & Blue) -->
+    <color name="primary">#1E3A8A</color>
+    <color name="primary_variant">#172554</color>
+    <color name="on_primary">#FFFFFF</color>
+
+    <color name="secondary">#2563EB</color>
+    <color name="secondary_variant">#1D4ED8</color>
+    <color name="on_secondary">#FFFFFF</color>
+
+    <!-- Surfaces & Backgrounds (Light Theme) -->
+    <color name="background">#F8FAFC</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#F1F5F9</color>
+    <color name="on_background">#0F172A</color>
+    <color name="on_surface">#0F172A</color>
+    <color name="on_surface_muted">#64748B</color>
+
+    <!-- UI Accent & Borders -->
+    <color name="border_light">#CBD5E1</color>
+    <color name="divider">#E2E8F0</color>
+
+    <!-- Functional Status Colors -->
+    <color name="status_success">#16A34A</color>
+    <color name="status_success_bg">#DCFCE7</color>
+    <color name="status_warning">#D97706</color>
+    <color name="status_warning_bg">#FEF3C7</color>
+    <color name="status_error">#DC2626</color>
+    <color name="status_error_bg">#FEE2E2</color>
+
+    <!-- Scanner Overlay Colors -->
+    <color name="overlay_scrim">#80000000</color>
+    <color name="overlay_target_detected">#22C55E</color>
+    <color name="overlay_target_searching">#38BDF8</color>
+    <color name="overlay_corner_pill">#FACC15</color>
+</resources>
