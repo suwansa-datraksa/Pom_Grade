@@ -1,0 +1,61 @@
+Pom Grade/
+├── .gitignore
+├── README.md
+├── docs/
+│   └── architecture.md               # สถาปัตยกรรมระดับองค์กร v6 ฉบับสมบูรณ์ (เวกเตอร์ใช้ \overset{\rightharpoonup}{...})
+│
+├── gas-backend/                      # [PHASE 1] Cloud Backend & Sheet Provisioning
+│   ├── Code.js                       # Apps Script V8 (doGet, doPost, loadScanIds_, provisionMultiRoomViews_)
+│   ├── appsscript.json               # Manifest (Execute as: USER_DEPLOYING / Access: MYSELF)
+│   ├── README.md                     # คู่มือ Deploy และคำสั่ง curl (--post302 + Bearer Token)
+│   └── tests/
+│       └── gas_backend.test.js       # Unit Test Suite จำลอง GAS (ผ่าน 9/9 ข้อ)
+│
+├── android-app/                      # [PHASE 2] Pure Native Android OMR Scanner (Kotlin Only)
+│   ├── build.gradle.kts              # Gradle Build Script (Top-level)
+│   ├── settings.gradle.kts           # Module Settings
+│   ├── gradle.properties
+│   ├── gradle/libs.versions.toml     # Version Catalog (AGP 8.3, Kotlin 1.9, CameraX, Room, Retrofit)
+│   ├── README.md                     # คู่มือคอมไพล์และการทำงานของแอป
+│   └── app/
+│       ├── build.gradle.kts
+│       ├── proguard-rules.pro        # ProGuard / R8 Rules ป้องกัน Obfuscation ปัญหา Room/Gson
+│       └── src/main/
+│           ├── AndroidManifest.xml   # Camera, Internet, Access Network State
+│           ├── java/com/pomgrade/omr/
+│           │   ├── OmrApplication.kt                 # Application Class เชื่อมโยง Dependency
+│           │   ├── auth/GoogleAuthManager.kt         # Google Play Services Auth & OAuth Bearer Token
+│           │   ├── data/local/
+│           │   │   ├── AppDatabase.kt                # SQLite/Room Database
+│           │   │   ├── ScanDao.kt                    # Data Access Object
+│           │   │   └── ScanEntity.kt                 # Entity พร้อม scan_id UUID Deduplication
+│           │   ├── data/remote/
+│           │   │   ├── AuthInterceptor.kt            # แนบ Bearer Token + แก้ 302 Redirect Post Loss
+│           │   │   ├── GasApiService.kt              # Retrofit API Service
+│           │   │   └── GasScanPayload.kt             # DTO สำหรับส่ง Batch Data
+│           │   ├── data/repository/ScanRepository.kt # Single Source of Truth
+│           │   ├── omr/
+│           │   │   ├── Point2D.kt                    # เวกเตอร์ 2D รองรับคณิตศาสตร์เชิงเส้น
+│           │   │   ├── OmrConfig.kt                  # พิกัด Canonical Plane และเกณฑ์การตรวจ
+│           │   │   ├── FiducialDetector.kt           # ตรวจจับมาร์กเกอร์ 4 มุม
+│           │   │   ├── GeometryRectifier.kt          # Stage 1: Global 4-Corner Homography
+│           │   │   ├── TimingTrackInterpolator.kt    # Stage 2: Dual-sided Timing Track Interpolation
+│           │   │   ├── BubbleAnalyzer.kt             # วิเคราะห์ความเข้มวงกลม (Adaptive Thresholding)
+│           │   │   └── OmrProcessor.kt               # ไปป์ไลน์หลักเชื่อมโยง Stage 1 -> Stage 2 -> Score
+│           │   ├── sync/SyncWorker.kt                # WorkManager ซิงค์เบื้องหลังแบบ Exponential Backoff
+│           │   └── ui/
+│           │       ├── MainActivity.kt               # แดชบอร์ดสรุปยอดสแกนและสถานะซิงค์
+│           │       ├── ScannerActivity.kt            # หน้าจอสแกนสด CameraX + Feedback เสียง/สั่น
+│           │       ├── HistoryActivity.kt            # ตรวจสอบประวัติและสถานะซิงค์รายแผ่น
+│           │       ├── SettingsActivity.kt           # ตั้งค่า Exam ID, Backend URL, และเข้าสู่ระบบ Google
+│           │       └── components/ScannerOverlayView.kt # Custom View วาดกรอบเล็งและไฮไลต์มาร์กเกอร์
+│           └── res/
+│               ├── layout/ (activity_main, activity_scanner, activity_history, activity_settings, item_scan_history)
+│               ├── values/ (colors, strings, themes)
+│               └── drawable/ (bg_status_pill)
+│
+└── web-console/                      # [PHASE 3] Static Web Management Console (GitHub Pages)
+    ├── index.html                    # แดชบอร์ด SPA พร้อม Google Identity Services (GIS)
+    ├── style.css                     # Light Theme คอนทราสต์สูง อ่านง่าย สบายตา
+    ├── app.js                        # GIS Token Client + Google Sheets API v4 In-Memory Fetcher
+    └── README.md                     # คู่มือการติดตั้งและ Deploy บน GitHub Pages

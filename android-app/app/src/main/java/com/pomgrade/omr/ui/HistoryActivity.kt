@@ -107,3 +107,4 @@ class HistoryActivity : AppCompatActivity() {
             oldItem == newItem
     }
 }
+

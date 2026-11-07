@@ -150,3 +150,4 @@ class FiducialDetector {
         return Point2D(sumX / count, sumY / count)
     }
 }
+

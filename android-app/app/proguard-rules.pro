@@ -16,3 +16,4 @@
 }
 -dontwarn okhttp3.**
 -dontwarn retrofit2.**
+

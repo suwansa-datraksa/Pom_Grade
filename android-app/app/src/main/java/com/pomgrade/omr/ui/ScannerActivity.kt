@@ -266,3 +266,4 @@ class ScannerActivity : AppCompatActivity() {
         return Bitmap.createBitmap(bitmap, 0, 0, imageProxy.width, imageProxy.height)
     }
 }
+

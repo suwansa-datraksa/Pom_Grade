@@ -84,3 +84,4 @@ data class GasScanBatchResponse(
     @SerializedName("synced_at")
     val syncedAt: String? = null
 )
+

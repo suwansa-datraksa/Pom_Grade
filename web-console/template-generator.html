@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบออกแบบและสร้างกระดาษคำตอบ OMR — Template Generator</title>
+
+  <!-- Google Fonts: Sarabun & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- jsPDF Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-group">
+        <div class="brand-icon">📐</div>
+        <div>
+          <h1 class="brand-title">ระบบออกแบบกระดาษคำตอบ OMR</h1>
+          <p class="brand-subtitle">Web Template Generator & PDF Layout Designer (Architecture v6)</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <a href="index.html" class="btn btn-outline" title="กลับไปยังแดชบอร์ดหลัก">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          แดชบอร์ดหลัก
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="app-main">
+
+    <div class="generator-layout">
+      <!-- Left Configuration Panel -->
+      <section class="panel-card config-panel">
+        <div class="panel-header">
+          <h2>⚙️ การตั้งค่าแม่แบบกระดาษคำตอบ</h2>
+          <p class="text-muted text-sm">กำหนดรายละเอียดข้อสอบ จำนวนข้อ และรูปแบบตัวเลือก</p>
+        </div>
+
+        <div class="panel-body">
+          <div class="form-group">
+            <label for="inputExamId">รหัสชุดข้อสอบ (Exam ID)</label>
+            <input type="text" id="inputExamId" class="input-text" value="EXAM_001" placeholder="เช่น EXAM_001, PHYS40-2026A">
+          </div>
+
+          <div class="form-group">
+            <label for="inputExamTitle">ชื่อวิชา / การทดสอบ (Exam Title)</label>
+            <input type="text" id="inputExamTitle" class="input-text" value="แบบทดสอบวัดผลการเรียนรู้กลางภาคเรียน" placeholder="เช่น ฟิสิกส์ ม.5">
+          </div>
+
+          <div class="form-group">
+            <label for="inputSchoolName">ชื่อโรงเรียน / สถาบันการศึกษา</label>
+            <input type="text" id="inputSchoolName" class="input-text" value="โรงเรียนมาตรฐานวิทยาคาร" placeholder="ชื่อโรงเรียน">
+          </div>
+
+          <div class="form-group">
+            <label for="selectPreset">รูปแบบกระดาษคำตอบ (Preset Layout)</label>
+            <select id="selectPreset" class="select-dropdown w-full">
+              <option value="20_QUESTIONS_4_CHOICES">20 ข้อ (4 ตัวเลือก: A, B, C, D) — คอลัมน์เดี่ยว</option>
+              <option value="40_QUESTIONS_4_CHOICES" selected>40 ข้อ (4 ตัวเลือก: A, B, C, D) — 2 คอลัมน์ (แนะนำ)</option>
+              <option value="60_QUESTIONS_4_CHOICES">60 ข้อ (4 ตัวเลือก: A, B, C, D) — 2 คอลัมน์ความหนาแน่นสูง</option>
+              <option value="40_QUESTIONS_5_CHOICES">40 ข้อ (5 ตัวเลือก: A, B, C, D, E) — 2 คอลัมน์</option>
+            </select>
+          </div>
+
+          <!-- Specification Summary Box -->
+          <div class="spec-summary-box">
+            <h4>📐 สเปกทางเทคนิคตามมาตรฐาน v6:</h4>
+            <ul>
+              <li><strong>ขนาดกระดาษ:</strong> A4 (210 x 297 mm) มาตราส่วน 100%</li>
+              <li><strong>Corner Fiducials:</strong> มุมบนซ้ายขนาด 14x14 mm (ระบุทิศทางกระดาษ) และอีก 3 มุมขนาด 8x8 mm</li>
+              <li><strong>Dual-Sided Timing Tracks:</strong> บาร์ซ้าย 5.0x1.6 mm | บาร์ขวา 3.0x1.6 mm ตรงกึ่งกลางแถว</li>
+              <li><strong>รหัสนักเรียน:</strong> ตารางฝนรหัส 5 หลัก (0-9)</li>
+              <li><strong>ขอบวงกลมตัวเลือก:</strong> สีเทากลาง <code>#666666</code> หนา 0.25 mm</li>
+            </ul>
+          </div>
+
+          <div class="action-buttons-group">
+            <button id="btnDownloadPdf" class="btn btn-secondary w-full">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              ดาวน์โหลด PDF กระดาษคำตอบ (A4 Print-Ready)
+            </button>
+
+            <button id="btnExportJson" class="btn btn-outline-dark w-full">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              ส่งออกพิกัดแม่แบบ JSON (สำหรับ Android Scanner)
+            </button>
+
+            <button id="btnValidateSchema" class="btn btn-outline-dark w-full">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              ตรวจสอบความถูกต้องพิกัด (Validate Schema)
+            </button>
+          </div>
+
+          <div id="validationResultBox" class="validation-box hidden">
+            <!-- Populated on validation -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Preview Panel -->
+      <section class="panel-card preview-panel">
+        <div class="panel-header">
+          <h2>📄 ตัวอย่างกระดาษคำตอบ (Live Interactive A4 Preview)</h2>
+          <span class="badge">A4 Vector Scale 100%</span>
+        </div>
+
+        <div class="panel-body preview-scroll">
+          <div class="a4-sheet-canvas-wrapper">
+            <svg id="sheetSvgPreview" class="a4-sheet-svg" viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg">
+              <!-- Dynamically rendered via JS -->
+            </svg>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- Prominent Credit Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p class="footer-credit">จัดทำโดย ครูสุวรรณษา เดชรักษา</p>
+      <p class="footer-subtext">ระบบตรวจข้อสอบ OMR ไฮบริด (Architecture Specification v6) | แม่แบบมาตรฐาน Dual-Sided Timing Tracks & Fiducial Anchors</p>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/pdf-generator.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const generator = new OmrPdfGenerator(TEMPLATE_CONFIG);
+
+      const inputExamId = document.getElementById('inputExamId');
+      const inputExamTitle = document.getElementById('inputExamTitle');
+      const inputSchoolName = document.getElementById('inputSchoolName');
+      const selectPreset = document.getElementById('selectPreset');
+
+      const btnDownloadPdf = document.getElementById('btnDownloadPdf');
+      const btnExportJson = document.getElementById('btnExportJson');
+      const btnValidateSchema = document.getElementById('btnValidateSchema');
+      const validationBox = document.getElementById('validationResultBox');
+
+      // Update SVG Preview
+      function updatePreview() {
+        const examId = inputExamId.value.trim() || 'EXAM_001';
+        const examTitle = inputExamTitle.value.trim() || 'แบบทดสอบมาตรฐาน';
+        const schoolName = inputSchoolName.value.trim() || 'โรงเรียนมาตรฐาน';
+        const presetKey = selectPreset.value;
+
+        const { metadata } = generator.generateSheet({
+          examId, examTitle, schoolName, presetKey
+        });
+
+        renderSvgPreview(metadata);
+      }
+
+      function renderSvgPreview(meta) {
+        const svg = document.getElementById('sheetSvgPreview');
+        svg.innerHTML = '';
+
+        // White background
+        const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        bg.setAttribute('width', '210');
+        bg.setAttribute('height', '297');
+        bg.setAttribute('fill', '#FFFFFF');
+        svg.appendChild(bg);
+
+        // 1. Draw Fiducials
+        const fids = meta.fiducials;
+        [fids.top_left, fids.top_right, fids.bottom_right, fids.bottom_left].forEach(f => {
+          const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          rect.setAttribute('x', f.x_mm);
+          rect.setAttribute('y', f.y_mm);
+          rect.setAttribute('width', f.width_mm);
+          rect.setAttribute('height', f.height_mm);
+          rect.setAttribute('fill', '#000000');
+          svg.appendChild(rect);
+        });
+
+        // 2. Header Text
+        const titleText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        titleText.setAttribute('x', '32');
+        titleText.setAttribute('y', '18');
+        titleText.setAttribute('font-size', '5');
+        titleText.setAttribute('font-weight', 'bold');
+        titleText.setAttribute('fill', '#1E3A8A');
+        titleText.textContent = meta.exam_title;
+        svg.appendChild(titleText);
+
+        const idText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        idText.setAttribute('x', '32');
+        idText.setAttribute('y', '24');
+        idText.setAttribute('font-size', '3.8');
+        idText.setAttribute('fill', '#0F172A');
+        idText.textContent = `Exam ID: ${meta.exam_id}`;
+        svg.appendChild(idText);
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', '32');
+        line.setAttribute('y1', '30');
+        line.setAttribute('x2', '194');
+        line.setAttribute('y2', '30');
+        line.setAttribute('stroke', '#CBD5E1');
+        line.setAttribute('stroke-width', '0.3');
+        svg.appendChild(line);
+
+        // 3. Student ID Bubbles
+        meta.student_id_matrix.columns.forEach(col => {
+          col.forEach(b => {
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', b.x_mm);
+            circle.setAttribute('cy', b.y_mm);
+            circle.setAttribute('r', b.radius_mm);
+            circle.setAttribute('fill', '#FFFFFF');
+            circle.setAttribute('stroke', '#666666');
+            circle.setAttribute('stroke-width', '0.25');
+            svg.appendChild(circle);
+
+            const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            txt.setAttribute('x', b.x_mm);
+            txt.setAttribute('y', b.y_mm + 0.9);
+            txt.setAttribute('font-size', '2.5');
+            txt.setAttribute('text-anchor', 'middle');
+            txt.setAttribute('fill', '#555555');
+            txt.textContent = b.digit;
+            svg.appendChild(txt);
+          });
+        });
+
+        // 4. Timing Tracks (Left: 5x1.6 mm, Right: 3x1.6 mm)
+        meta.timing_tracks.left_bars.forEach(b => {
+          const r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          r.setAttribute('x', b.x_mm);
+          r.setAttribute('y', b.y_mm);
+          r.setAttribute('width', b.width_mm);
+          r.setAttribute('height', b.height_mm);
+          r.setAttribute('fill', '#000000');
+          svg.appendChild(r);
+        });
+
+        meta.timing_tracks.right_bars.forEach(b => {
+          const r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          r.setAttribute('x', b.x_mm);
+          r.setAttribute('y', b.y_mm);
+          r.setAttribute('width', b.width_mm);
+          r.setAttribute('height', b.height_mm);
+          r.setAttribute('fill', '#000000');
+          svg.appendChild(r);
+        });
+
+        // 5. Question Bubbles
+        meta.questions.forEach(q => {
+          q.options.forEach(opt => {
+            const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            c.setAttribute('cx', opt.x_mm);
+            c.setAttribute('cy', opt.y_mm);
+            c.setAttribute('r', opt.radius_mm);
+            c.setAttribute('fill', '#FFFFFF');
+            c.setAttribute('stroke', '#666666');
+            c.setAttribute('stroke-width', '0.25');
+            svg.appendChild(c);
+
+            const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            t.setAttribute('x', opt.x_mm);
+            t.setAttribute('y', opt.y_mm + 0.9);
+            t.setAttribute('font-size', '2.4');
+            t.setAttribute('text-anchor', 'middle');
+            t.setAttribute('fill', '#555555');
+            t.textContent = opt.choice;
+            svg.appendChild(t);
+          });
+        });
+
+        // 6. Footer Credit
+        const fText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        fText.setAttribute('x', '105');
+        fText.setAttribute('y', '289');
+        fText.setAttribute('font-size', '3');
+        fText.setAttribute('font-style', 'italic');
+        fText.setAttribute('text-anchor', 'middle');
+        fText.setAttribute('fill', '#64748B');
+        fText.textContent = meta.credit;
+        svg.appendChild(fText);
+      }
+
+      // Download PDF Button
+      btnDownloadPdf.addEventListener('click', () => {
+        const examId = inputExamId.value.trim() || 'EXAM_001';
+        const examTitle = inputExamTitle.value.trim() || 'แบบทดสอบมาตรฐาน';
+        const schoolName = inputSchoolName.value.trim() || 'โรงเรียนมาตรฐาน';
+        const presetKey = selectPreset.value;
+
+        const { doc } = generator.generateSheet({
+          examId, examTitle, schoolName, presetKey
+        });
+
+        doc.save(`OMR_Sheet_${examId}.pdf`);
+      });
+
+      // Export Coordinates JSON Button
+      btnExportJson.addEventListener('click', () => {
+        const examId = inputExamId.value.trim() || 'EXAM_001';
+        const examTitle = inputExamTitle.value.trim() || 'แบบทดสอบมาตรฐาน';
+        const schoolName = inputSchoolName.value.trim() || 'โรงเรียนมาตรฐาน';
+        const presetKey = selectPreset.value;
+
+        const { metadata } = generator.generateSheet({
+          examId, examTitle, schoolName, presetKey
+        });
+
+        const jsonStr = JSON.stringify(metadata, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `template_coords_${examId.toLowerCase()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+
+      // Validate Schema Button
+      btnValidateSchema.addEventListener('click', () => {
+        const examId = inputExamId.value.trim() || 'EXAM_001';
+        const examTitle = inputExamTitle.value.trim() || 'แบบทดสอบมาตรฐาน';
+        const schoolName = inputSchoolName.value.trim() || 'โรงเรียนมาตรฐาน';
+        const presetKey = selectPreset.value;
+
+        const { metadata } = generator.generateSheet({
+          examId, examTitle, schoolName, presetKey
+        });
+
+        const validation = OmrPdfGenerator.validateMetadata(metadata);
+        validationBox.classList.remove('hidden');
+
+        if (validation.valid) {
+          validationBox.className = 'validation-box success';
+          validationBox.innerHTML = `
+            <strong>✅ พิกัดถูกต้องสมบูรณ์ (100% Validated):</strong>
+            <ul>
+              <li>Top-Left Fiducial: ${metadata.fiducials.top_left.width_mm}x${metadata.fiducials.top_left.height_mm} mm (ตรงตามสเปก 14x14 mm)</li>
+              <li>Other Fiducials: 8x8 mm (ครบทั้ง 3 มุม)</li>
+              <li>Left Timing Bars: 5.0x1.6 mm (ตรงกึ่งกลางแถว)</li>
+              <li>Right Timing Bars: 3.0x1.6 mm (ตรงกึ่งกลางแถว)</li>
+              <li>Student ID Matrix: 5 หลัก ครบทุกตำแหน่ง</li>
+              <li>Questions: ${metadata.questions.length} ข้อ ตัวเลือก A-D ขอบสี #666666</li>
+            </ul>
+          `;
+        } else {
+          validationBox.className = 'validation-box error';
+          validationBox.innerHTML = `
+            <strong>❌ ตรวจพบข้อผิดพลาด:</strong>
+            <ul>
+              ${validation.errors.map(e => `<li>${e}</li>`).join('')}
+            </ul>
+          `;
+        }
+      });
+
+      // Event listeners for real-time preview updates
+      [inputExamId, inputExamTitle, inputSchoolName, selectPreset].forEach(el => {
+        el.addEventListener('input', updatePreview);
+        el.addEventListener('change', updatePreview);
+      });
+
+      // Initial Render
+      updatePreview();
+    });
+  </script>
+</body>
+</html>

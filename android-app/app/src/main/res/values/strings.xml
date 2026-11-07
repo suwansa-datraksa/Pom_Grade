@@ -37,3 +37,4 @@
     <string name="pref_sound_feedback_label">เสียงเตือนเมื่อสแกนสำเร็จ</string>
     <string name="pref_vibrate_feedback_label">สั่นเตือนเมื่อสแกนสำเร็จ</string>
 </resources>
+

@@ -18,3 +18,4 @@ interface GasApiService {
         @Body payload: GasScanBatchRequest
     ): Response<GasScanBatchResponse>
 }
+

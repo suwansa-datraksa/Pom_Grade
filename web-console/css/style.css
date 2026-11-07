@@ -1,0 +1,378 @@
+/* ==========================================================================
+   PRODUCTION-GRADE HYBRID OMR EXAM SYSTEM — WEB CONSOLE & GENERATOR STYLES
+   Architecture Specification v6
+   จัดทำโดย ครูสุวรรณษา เดชรักษา
+   ========================================================================== */
+
+:root {
+  --primary: #1E3A8A;           /* Deep Navy */
+  --primary-light: #2563EB;     /* Blue 600 */
+  --primary-dark: #172554;      /* Navy 950 */
+  --secondary: #0284C7;         /* Sky 600 */
+  
+  --bg-page: #F8FAFC;           /* Slate 50 */
+  --bg-surface: #FFFFFF;        /* Pure White */
+  --bg-surface-alt: #F1F5F9;    /* Slate 100 */
+  
+  --text-main: #0F172A;         /* Slate 900 */
+  --text-muted: #64748B;        /* Slate 500 */
+  --text-on-primary: #FFFFFF;
+  
+  --border-color: #CBD5E1;      /* Slate 300 */
+  --border-light: #E2E8F0;      /* Slate 200 */
+  
+  --status-success-bg: #DCFCE7; /* Emerald 100 */
+  --status-success-text: #166534;/* Emerald 800 */
+  --status-warning-bg: #FEF3C7; /* Amber 100 */
+  --status-warning-text: #92400E;/* Amber 800 */
+  --status-error-bg: #FEE2E2;   /* Red 100 */
+  --status-error-text: #991B1B;  /* Red 800 */
+  
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Sarabun', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.app-header {
+  background-color: var(--primary);
+  color: var(--text-on-primary);
+  box-shadow: var(--shadow-md);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.header-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-icon {
+  font-size: 28px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+}
+
+.brand-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.brand-subtitle {
+  font-size: 12px;
+  color: #BFDBFE;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background-color: #FFFFFF;
+  color: var(--primary);
+}
+.btn-primary:hover {
+  background-color: #F1F5F9;
+}
+
+.btn-secondary {
+  background-color: var(--primary-light);
+  color: #FFFFFF;
+}
+.btn-secondary:hover {
+  background-color: var(--primary);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.btn-outline:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: #FFFFFF;
+}
+
+.btn-outline-dark {
+  background-color: transparent;
+  color: var(--text-main);
+  border-color: var(--border-color);
+}
+.btn-outline-dark:hover {
+  background-color: var(--bg-surface-alt);
+  border-color: var(--text-muted);
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.w-full {
+  width: 100%;
+}
+
+/* Main Layout */
+.app-main {
+  flex: 1;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Generator 2-Column Grid Layout */
+.generator-layout {
+  display: grid;
+  grid-template-columns: 460px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .generator-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: #FAFAFA;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-header h2 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.panel-body {
+  padding: 20px;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.input-text, .select-dropdown {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 13px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  outline: none;
+  background-color: #FFFFFF;
+}
+
+.input-text:focus, .select-dropdown:focus {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.spec-summary-box {
+  background-color: var(--bg-surface-alt);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  font-size: 12px;
+}
+
+.spec-summary-box h4 {
+  font-size: 13px;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.spec-summary-box ul {
+  padding-left: 18px;
+  line-height: 1.6;
+}
+
+.spec-summary-box code {
+  background-color: #E2E8F0;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.action-buttons-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Validation Box */
+.validation-box {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.validation-box.hidden {
+  display: none;
+}
+
+.validation-box.success {
+  background-color: var(--status-success-bg);
+  border: 1px solid #86EFAC;
+  color: var(--status-success-text);
+}
+
+.validation-box.error {
+  background-color: var(--status-error-bg);
+  border: 1px solid #FCA5A5;
+  color: var(--status-error-text);
+}
+
+.validation-box ul {
+  padding-left: 18px;
+  margin-top: 6px;
+}
+
+/* Live SVG Preview & Canvas */
+.preview-panel {
+  min-height: 700px;
+}
+
+.preview-scroll {
+  background-color: #E2E8F0;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+}
+
+.a4-sheet-canvas-wrapper {
+  background-color: #FFFFFF;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+  width: 100%;
+  max-width: 540px;
+}
+
+.a4-sheet-svg {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 210 / 297;
+  display: block;
+}
+
+/* General Typography & Utilities */
+.text-muted { color: var(--text-muted); }
+.text-sm { font-size: 12px; }
+.badge {
+  background-color: #DBEAFE;
+  color: var(--primary);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Footer Credit */
+.app-footer {
+  background-color: var(--bg-surface);
+  border-top: 1px solid var(--border-color);
+  padding: 20px 24px;
+  margin-top: auto;
+}
+
+.footer-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.footer-credit {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+  letter-spacing: -0.01em;
+}
+
+.footer-subtext {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}

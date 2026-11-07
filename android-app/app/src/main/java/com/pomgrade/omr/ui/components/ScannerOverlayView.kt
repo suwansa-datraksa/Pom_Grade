@@ -122,3 +122,4 @@ class ScannerOverlayView @JvmOverloads constructor(
         canvas.drawCircle(pt.x.toFloat(), pt.y.toFloat(), 12f, cornerPillPaint)
     }
 }
+

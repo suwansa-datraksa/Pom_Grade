@@ -86,3 +86,4 @@ class GoogleAuthManager(private val context: Context) {
         signInClient.signOut()
     }
 }
+

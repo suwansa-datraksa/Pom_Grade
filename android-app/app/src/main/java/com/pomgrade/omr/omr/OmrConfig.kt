@@ -45,3 +45,4 @@ object OmrConfig {
     const val QUESTIONS_COL2_LEFT_X = 660.0
     const val QUESTIONS_COL2_RIGHT_X = 1040.0
 }
+

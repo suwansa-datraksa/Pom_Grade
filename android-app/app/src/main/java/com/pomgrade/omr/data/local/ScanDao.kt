@@ -45,3 +45,4 @@ interface ScanDao {
     @Query("SELECT * FROM scans WHERE scan_id = :scanId LIMIT 1")
     suspend fun getScanById(scanId: String): ScanEntity?
 }
+
