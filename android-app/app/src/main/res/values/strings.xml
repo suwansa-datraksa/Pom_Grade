@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Pom Grade OMR</string>
-    <string name="app_subtitle">ระบบตรวจข้อสอบ OMR ความแม่นยำสูงระดับอุตสาหกรรม</string>
+    <string name="app_name">Pom Grade</string>
+    <string name="app_subtitle">ระบบตรวจข้อสอบ OMR ความแม่นยำสูงระดับอัจฉริยะ</string>
     <string name="credit_footer">จัดทำโดย ครูสุวรรณษา เดชรักษา</string>
 
     <!-- Navigation & Titles -->

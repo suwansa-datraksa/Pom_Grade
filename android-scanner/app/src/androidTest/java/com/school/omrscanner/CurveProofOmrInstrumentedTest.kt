@@ -197,3 +197,4 @@ class CurveProofOmrInstrumentedTest {
         return bitmap
     }
 }
+

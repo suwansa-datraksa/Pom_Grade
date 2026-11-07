@@ -264,3 +264,4 @@ class MarkerDetector {
         return dx * dx + dy * dy
     }
 }
+

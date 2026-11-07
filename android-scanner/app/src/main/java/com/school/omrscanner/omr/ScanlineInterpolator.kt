@@ -84,3 +84,4 @@ class ScanlineInterpolator {
         return kotlin.math.sqrt(dx * dx + dy * dy)
     }
 }
+

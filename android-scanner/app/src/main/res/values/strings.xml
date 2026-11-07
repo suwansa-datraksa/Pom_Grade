@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Pom Grade</string>
+    <string name="app_subtitle">ระบบตรวจข้อสอบ OMR ความแม่นยำสูงระดับอัจฉริยะ</string>
+    <string name="credit_footer">จัดทำโดย ครูสุวรรณษา เดชรักษา</string>
+
+    <!-- Navigation & Titles -->
+    <string name="title_scanner">สแกนกระดาษคำตอบ</string>
+    <string name="title_history">ประวัติการสแกนและสถานะซิงค์</string>
+    <string name="title_settings">การตั้งค่าระบบ</string>
+
+    <!-- Scanner Prompts -->
+    <string name="scanner_align_hint">วางมุมกระดาษคำตอบทั้ง 4 จุดให้อยู่ในกรอบ</string>
+    <string name="scanner_fiducials_found">ตรวจพบจุดมุมครบ 4 จุด กำลังประมวลผล…</string>
+    <string name="scanner_processing">กำลังวิเคราะห์ผลการฝนข้อสอบ…</string>
+    <string name="scanner_success">บันทึกคะแนนเรียบร้อยแล้ว!</string>
+
+    <!-- Dialogs & Buttons -->
+    <string name="btn_start_scan">เริ่มสแกนข้อสอบ</string>
+    <string name="btn_view_history">ดูประวัติการสแกน</string>
+    <string name="btn_sync_now">ซิงค์ข้อมูลกับคลาวด์</string>
+    <string name="btn_sign_in_google">ลงชื่อเข้าใช้ Google Account</string>
+    <string name="btn_save">บันทึกการตั้งค่า</string>
+    <string name="btn_cancel">ยกเลิก</string>
+
+    <!-- Status -->
+    <string name="sync_status_pending">รอซิงค์</string>
+    <string name="sync_status_synced">ซิงค์สำเร็จแล้ว</string>
+    <string name="sync_status_failed">ซิงค์ล้มเหลว</string>
+    <string name="status_signed_in">เข้าสู่ระบบแล้ว: %1$s</string>
+    <string name="status_not_signed_in">ยังไม่ได้เข้าสู่ระบบ Google</string>
+
+    <!-- Settings Fields -->
+    <string name="pref_exam_id_label">รหัสข้อสอบปัจจุบัน (Exam ID)</string>
+    <string name="pref_backend_url_label">URL เว็บแอป Google Apps Script</string>
+    <string name="pref_device_id_label">รหัสเครื่องสแกน (Device ID)</string>
+    <string name="pref_sound_feedback_label">เสียงเตือนเมื่อสแกนสำเร็จ</string>
+    <string name="pref_vibrate_feedback_label">สั่นเตือนเมื่อสแกนสำเร็จ</string>
+</resources>
+

@@ -248,3 +248,4 @@ class TimingTrackDetector {
         return Point((bar.xMm + bar.widthMm / 2) * scaleX, (bar.yMm + bar.heightMm / 2) * scaleY)
     }
 }
+
