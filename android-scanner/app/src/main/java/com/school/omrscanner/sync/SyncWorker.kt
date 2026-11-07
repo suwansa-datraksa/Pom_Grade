@@ -1,6 +1,12 @@
 package com.school.omrscanner.sync
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
+import android.os.Build
+import androidx.core.app.NotificationCompat
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
@@ -8,6 +14,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.school.omrscanner.MainActivity
 import com.school.omrscanner.auth.GoogleAuthProvider
 import com.school.omrscanner.data.local.AppDatabase
 import com.school.omrscanner.data.local.ScanDao
@@ -58,13 +65,18 @@ class SyncWorker(
         // 3. Obtain Token & Create Authenticated Retrofit Client
         val authProvider = GoogleAuthProvider(applicationContext)
         if (!authProvider.isUserSignedIn()) {
+            showAuthNotification()
             return Result.retry()
         }
 
         // Silent refresh if needed
         val token = authProvider.getCachedToken()
             ?: authProvider.fetchFreshAccessToken().getOrNull()
-            ?: return Result.retry()
+
+        if (token == null) {
+            showAuthNotification()
+            return Result.retry()
+        }
 
         val okHttpClient = OkHttpProvider.createClient(authProvider)
         val retrofit = Retrofit.Builder()
@@ -132,6 +144,46 @@ class SyncWorker(
         } catch (e: Exception) {
             Result.retry()
         }
+    }
+
+    private fun showAuthNotification() {
+        try {
+            val channelId = "pom_grade_auth_channel"
+            val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+                ?: return
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val channel = NotificationChannel(
+                    channelId,
+                    "การยืนยันตัวตน Pom Grade",
+                    NotificationManager.IMPORTANCE_HIGH
+                ).apply {
+                    description = "แจ้งเตือนเมื่อ Token หมดอายุและต้องการการลงชื่อเข้าใช้ใหม่"
+                }
+                notificationManager.createNotificationChannel(channel)
+            }
+
+            val intent = Intent(applicationContext, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            val pendingIntent = PendingIntent.getActivity(
+                applicationContext,
+                0,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+            )
+
+            val notification = NotificationCompat.Builder(applicationContext, channelId)
+                .setSmallIcon(android.R.drawable.ic_dialog_alert)
+                .setContentTitle("Pom Grade — ต้องยืนยันตัวตนใหม่")
+                .setContentText("กรุณาเปิดแอปเพื่อยืนยันตัวตน Google ใหม่")
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .build()
+
+            notificationManager.notify(1001, notification)
+        } catch (_: Exception) {}
     }
 
     companion object {
