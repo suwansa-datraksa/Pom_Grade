@@ -3,7 +3,7 @@
 
 เอกสารฉบับนี้อัปเกรดจาก v3.1 และ v5 โดยรวบรวมคุณสมบัติสำคัญ:
 1. **การรักษาความปลอดภัยระดับองค์กร:** ยืนยันตัวตนด้วย Google OAuth ผ่าน Apps Script แบบ "Only myself"
-2. **คณิตศาสตร์ชดเชยกระดาษโค้งย่น (Dual-Sided Timing Tracks):** ดัดระนาบรายแถวด้วยเวกเตอร์การประมาณค่าในช่วง (Local Interpolation Vector $\vec{P}_i(t)$)
+2. **คณิตศาสตร์ชดเชยกระดาษโค้งย่น (Dual-Sided Timing Tracks):** ดัดระนาบรายแถวด้วยเวกเตอร์การประมาณค่าในช่วง (Local Interpolation Vector $\overset{\rightharpoonup}{P}_i(t)$)
 3. **การจัดโครงสร้างชีตสำหรับครูผู้สอน (Teacher-Friendly Multi-Room Gradebook):** จัดเก็บข้อมูลดิบแบบ Append-Only ใน `Raw_Scans` เพื่อความโปร่งใสและตรวจสอบย้อนหลังได้ พร้อมระบบสารบัญอัตโนมัติ (`Index`), ทะเบียนนักเรียนแยกเฉพาะ (`Students`), และตารางเกรดแยก 1 ห้อง 1 แท็บ (`Room_XXX`) ที่ดึงคะแนนล่าสุดเรียงตามเลขที่อัตโนมัติ
 4. **แก้ปัญหาทางเทคนิคสำคัญ:** ป้องกันการตัด Header `Authorization` ขณะเกิด HTTP 302 Redirect ใน Android HTTP Client
 
@@ -16,7 +16,7 @@
 | **การยืนยันตัวตน** | Google OAuth (Only myself) | HMAC-SHA256 (Secret รั่วบนเว็บ) | **Google OAuth (Only myself)** |
 | **การจัดเก็บข้อมูล** | Append-Only (ดูในชีตยาก) | Smart Upsert (เสี่ยงข้อมูลหาย) | **Append-Only ใน `Raw_Scans` + Auto Multi-Room Sheets (1 ห้อง 1 แท็บ)** |
 | **หน้าแสดงผลในชีต** | รวมในแท็บเดียว | รวมในแท็บเดียว | **มีหน้าสารบัญ (`Index`) + หน้าทะเบียน ID (`Students`) + แท็บแยกห้อง (`Room_XXX`)** |
-| **การแก้กระดาษโค้ง** | บรรยายขั้นตอน Timing Tracks | สมการเวกเตอร์ $\vec{P}_i(t)$ | **สมการเวกเตอร์ $\vec{P}_i(t)$ + Asymmetric Bar Widths + ตรวจสอบ Residual** |
+| **การแก้กระดาษโค้ง** | บรรยายขั้นตอน Timing Tracks | สมการเวกเตอร์ $\overset{\rightharpoonup}{P}_i(t)$ | **สมการเวกเตอร์ $\overset{\rightharpoonup}{P}_i(t)$ + Asymmetric Bar Widths + ตรวจสอบ Residual** |
 | **การส่งผ่าน HTTP** | ไม่ระบุการจัดการ Redirect | ยิงส่งตรง | **OkHttp Custom Redirect Interceptor รักษา Authorization Header** |
 | **โครงสร้าง Master Prompt** | แบ่ง 6 เฟส มี Acceptance Criteria | Master Prompt ก้อนเดียว | **แบ่ง 6 เฟส พร้อม Acceptance Criteria คลุม Multi-Room Generator** |
 
@@ -174,7 +174,7 @@
    * ทำ Adaptive Thresholding และ Connected Components เพื่อหาพิกัดจุดศูนย์ถ่วง (Centroid) ของแถบแต่ละแถว $i$ จะได้พิกัดจริง $P_{L, i} = (x_{L, i}, y_{L, i})$ และ $P_{R, i} = (x_{R, i}, y_{R, i})$
 3. **Scanline Bubble Interpolation:**
    สำหรับคำถามในแถวที่ $i$ พิกัดจะไม่ยึดตามแกน $y$ คงที่ แต่จะคำนวณตามแนวเส้นเวกเตอร์ที่เชื่อมต่อระหว่าง $P_{L, i}$ และ $P_{R, i}$:
-   $$\vec{P}_i(t) = (1 - t) \begin{pmatrix} x_{L, i} \\ y_{L, i} \end{pmatrix} + t \begin{pmatrix} x_{R, i} \\ y_{R, i} \end{pmatrix}, \quad t \in [0, 1]$$
+   $$\overset{\rightharpoonup}{P}_i(t) = (1 - t) \begin{pmatrix} x_{L, i} \\ y_{L, i} \end{pmatrix} + t \begin{pmatrix} x_{R, i} \\ y_{R, i} \end{pmatrix}, \quad t \in [0, 1]$$
    โดย $t$ คือสัดส่วนตำแหน่งแกน $x$ ปกติของแต่ละช้อยส์จาก Template
 4. **การตรวจสอบความคลาดเคลื่อน (Residual Validation):**
    * หากตรวจไม่พบ Timing Bar บางแถว ให้ใช้การประมาณค่าจากแถวข้างเคียง (Linear Spline) แต่หากแถวที่หายไปเกิน $10\%$ ของจำนวนแถวทั้งหมด ให้ยกเลิกการประมวลผลและเตือนให้ผู้ใช้ถ่ายภาพใหม่

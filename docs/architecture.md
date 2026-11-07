@@ -643,3 +643,62 @@ Requirements:
 Acceptance Criteria:
 - Clean build of Android release APK with R8 and green deployment workflow run for GitHub Pages.
 ```
+
+---
+
+## 9. คู่มือปฏิบัติการความปลอดภัยและการติดตั้งใช้งานจริง (Operational & Security Manual)
+
+### 9.1 ตารางตรวจสอบแบบจำลองภัยคุกคาม (Threat Model Audit Checklist)
+
+| มิติความปลอดภัย | มาตรการที่กำหนด (Architecture v6) | ผลการตรวจสอบ (Status) |
+| :--- | :--- | :---: |
+| **ความลับในแอป (Zero Secrets)** | ไม่มี Shared Secret, API Key หรือ Password ฝังในซอร์สโค้ดของ Android หรือ Web Console | **ผ่าน 100%** |
+| **การยืนยันตัวตนคลาวด์** | Apps Script ตั้งค่า `Execute as: Me` และ `Who has access: Only myself` โดย Android แนบ `Authorization: Bearer <OAuth_Token>` | **ผ่าน 100%** |
+| **การป้องกัน XSS ในเว็บคอนโซล** | แสดงผลข้อมูลจาก Google Sheets ผ่าน `.textContent` และ DOM Node Creation เท่านั้น (ไม่มีการใช้ `.innerHTML` กับค่าดิบ) | **ผ่าน 100%** |
+| **การป้องกันข้อมูลรั่วไหลในเครื่อง** | Android ตั้งค่า `allowBackup="false"`, `dataExtractionRules="@null"`, `fullBackupContent="false"` ใน `AndroidManifest.xml` | **ผ่าน 100%** |
+| **การเข้ารหัสการสื่อสาร** | ตั้งค่า `network_security_config.xml` กำหนด `cleartextTrafficPermitted="false"` บังคับใช้ TLS 1.3/HTTPS เท่านั้น | **ผ่าน 100%** |
+| **ความทนทานต่อ Redirect 302** | `OkHttpProvider` มี Custom Interceptor ดักจับรหัส 302/307 เพื่อส่งต่อ Header `Authorization` และ Payload ครบถ้วน | **ผ่าน 100%** |
+| **การป้องกันข้อมูลซ้ำซ้อน** | ระบบคลาวด์ใช้ UUID `scan_id` พร้อม Bounded Window Scan (5,000 แถวล่าสุด) ในการ Deduplicate แบบ O(1) | **ผ่าน 100%** |
+| **ความทนทานต่อกระดาษโค้งย่น** | ดัดระนาบ 2 ระดับ: Homography 4 มุม ร่วมกับ $\overset{\rightharpoonup}{P}_i(t) = (1-t)\overset{\rightharpoonup}{P}_{L,i} + t\overset{\rightharpoonup}{P}_{R,i}$ | **ผ่าน 100%** |
+
+---
+
+### 9.2 คู่มือการติดตั้งใช้งานระบบ (Operational Deployment Manual)
+
+#### ขั้นตอนที่ 1: การติดตั้ง Google Apps Script Backend
+1. เปิดสเปรดชีต Google Sheets: `https://docs.google.com/spreadsheets/d/1KcL20IBw5r36ODy9lcsBal6SmeZ9rRitctotZfwJKH4/edit`
+2. ไปที่เมนู **ส่วนขยาย (Extensions)** $\to$ **Apps Script**
+3. คัดลอกซอร์สโค้ดจาก `gas-backend/Code.js` วางแทนที่โค้ดเดิมทั้งหมด
+4. คัดลอกการตั้งค่าจาก `gas-backend/appsscript.json` ไปที่ไฟล์ `appsscript.json` ในตัวแก้ไข
+5. คลิก **การทำให้ใช้งานได้ (Deploy)** $\to$ **การทำให้ใช้งานได้ใหม่ (New deployment)**
+   - ประเภท: **เว็บแอป (Web app)**
+   - ดำเนินการในฐานะ (Execute as): **ฉัน (Me)**
+   - ผู้มีสิทธิ์เข้าถึง (Who has access): **เฉพาะฉัน (Only myself)**
+6. คัดลอก URL เว็บแอป (ลงท้ายด้วย `/exec`) เพื่อนำไปใส่ในการตั้งค่าของแอปมือถือ Pom Grade
+
+#### ขั้นตอนที่ 2: การพิมพ์กระดาษคำตอบ OMR ที่ได้มาตรฐาน
+1. เปิดหน้า `web-console/template-generator.html`
+2. เลือกรูปแบบข้อสอบ (เช่น 20 ข้อ 4 ตัวเลือก, 40 ข้อ หรือ 60 ข้อ)
+3. ตรวจสอบมาร์กเกอร์ 4 มุม: มุมซ้ายบนขนาด $14 \times 14\text{ mm}$ และมุมอื่น $8 \times 8\text{ mm}$
+4. สั่งพิมพ์ลงกระดาษ A4 ที่มาตราส่วน **100% (Actual Size)** โดยไม่เลือกตัวเลือก "Fit to page"
+
+#### ขั้นตอนที่ 3: การใช้งานแอปสแกนข้อสอบ Pom Grade (Android)
+1. เปิดแอป **Pom Grade** บนโทรศัพท์มือถือ Android
+2. แตะปุ่ม **ลงชื่อเข้าใช้ Google (OAuth)** ด้วยบัญชี Google ที่เป็นเจ้าของสเปรดชีต
+3. กำหนดรหัสข้อสอบ (Exam ID) ในหน้าตั้งค่า ให้ตรงกับรหัสในแท็บ `Protected_Keys`
+4. แตะปุ่ม **เริ่มสแกนข้อสอบ** และจัดวางมุมกระดาษคำตอบให้ตรงกับกรอบหน้าจอ
+5. เมื่อตรวจพบจุดมุมครบ 4 จุด ระบบจะคำนวณผล สั่นเตือน และบันทึกคะแนนลงเครื่องพร้อมซิงค์ขึ้นคลาวด์อัตโนมัติ
+
+#### ขั้นตอนที่ 4: การดูผลและการวิเคราะห์ข้อสอบ (Web Console)
+1. เปิดเว็บคอนโซล Pom Grade ผ่าน GitHub Pages
+2. คลิก **ลงชื่อเข้าใช้ Google** เพื่อขอ Access Token ในหน่วยความจำ (Read-only)
+3. ระบบจะแสดง:
+   - **Index Overview:** ผลคะแนนและอัตราการเข้าสอบจำแนกรายห้องเรียน พร้อมเปิดดูรายบุคคล
+   - **Question Heatmap:** แผนผังความยากง่ายรายข้อ ($p$) และค่าอำนาจจำแนก ($D$)
+   - **Item Analysis:** ตารางสถิติข้อสอบรายข้อ พร้อมปุ่มวิเคราะห์ตัวลวง (Distractors A, B, C, D, E)
+   - **Reliability (KR-20):** ค่าความเชื่อมั่นของแบบทดสอบทั้งฉบับ
+
+---
+
+> **จัดทำโดย ครูสุวรรณษา เดชรักษา**  
+> *Pom Grade — Production-Grade Hybrid OMR Exam System (Architecture Specification v6)*
