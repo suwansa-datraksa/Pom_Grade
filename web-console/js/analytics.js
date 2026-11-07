@@ -238,3 +238,4 @@
     module.exports = Analytics;
   }
 })(typeof window !== 'undefined' ? window : global);
+

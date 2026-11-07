@@ -79,3 +79,4 @@ data class GasScanResultItem(
     @SerializedName("flag")
     val flag: String? = null
 )
+

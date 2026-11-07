@@ -123,3 +123,4 @@ class ScannerOverlayView @JvmOverloads constructor(
         canvas.drawText(hint, w / 2f, top - 24f, textPaint)
     }
 }
+

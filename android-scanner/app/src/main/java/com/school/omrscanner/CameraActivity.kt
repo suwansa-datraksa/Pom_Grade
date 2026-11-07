@@ -419,3 +419,4 @@ class CameraActivity : AppCompatActivity() {
         toneGenerator?.release()
     }
 }
+

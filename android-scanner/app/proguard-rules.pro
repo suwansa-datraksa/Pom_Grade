@@ -46,3 +46,4 @@
 # Google Play Services Auth
 -keep class com.google.android.gms.auth.api.** { *; }
 -keep class com.google.android.gms.common.** { *; }
+

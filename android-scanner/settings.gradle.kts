@@ -15,3 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "PomGradeScanner"
 include(":app")
+

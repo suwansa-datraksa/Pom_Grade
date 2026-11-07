@@ -196,3 +196,4 @@ class RedirectAuthTransitionTest {
         assertEquals("10002", correctedEntity.studentCode)
     }
 }
+

@@ -180,3 +180,4 @@
     module.exports = SheetsClient;
   }
 })(typeof window !== 'undefined' ? window : global);
+

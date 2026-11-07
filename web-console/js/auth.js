@@ -123,3 +123,4 @@
     module.exports = Auth;
   }
 })(typeof window !== 'undefined' ? window : global);
+

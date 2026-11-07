@@ -104,3 +104,4 @@ class SettingsActivity : AppCompatActivity() {
         finish()
     }
 }
+
