@@ -2,6 +2,7 @@ package com.school.omrscanner.data.local
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
@@ -30,7 +31,7 @@ data class ScanEntity(
     val scanId: String,
 
     @ColumnInfo(name = "scanned_at")
-    val scannedAt: Long,
+    val scannedAt: Long = System.currentTimeMillis(),
 
     @ColumnInfo(name = "received_at")
     val receivedAt: String? = null,
@@ -45,10 +46,10 @@ data class ScanEntity(
     val studentCode: String,
 
     @ColumnInfo(name = "score")
-    val score: Int,
+    val score: Double = 0.0,
 
     @ColumnInfo(name = "max_score")
-    val maxScore: Int,
+    val maxScore: Double = 0.0,
 
     @ColumnInfo(name = "answers")
     val answers: String,
@@ -62,6 +63,9 @@ data class ScanEntity(
     @ColumnInfo(name = "created_at")
     val createdAt: Long = System.currentTimeMillis()
 ) {
+    val status: String
+        get() = flag
+
     companion object {
         const val STATUS_PENDING = 0
         const val STATUS_SYNCED = 1

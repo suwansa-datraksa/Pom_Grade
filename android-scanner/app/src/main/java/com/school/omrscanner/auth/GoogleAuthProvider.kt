@@ -38,6 +38,12 @@ class GoogleAuthProvider(private val context: Context) {
 
     fun isUserSignedIn(): Boolean = getSignedInAccount() != null
 
+    fun isSignedIn(): Boolean = isUserSignedIn()
+
+    fun getSignInIntent(): android.content.Intent = signInClient.signInIntent
+
+    fun getCurrentAccountEmail(): String? = getSignedInAccount()?.email
+
     fun getCachedToken(): String? {
         val token = prefs.getString(KEY_CACHED_TOKEN, null)
         val expiry = prefs.getLong(KEY_EXPIRY_TIME, 0L)

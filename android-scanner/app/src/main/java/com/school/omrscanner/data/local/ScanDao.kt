@@ -15,10 +15,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ScanDao {
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertScan(scan: ScanEntity): Long
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertScans(scans: List<ScanEntity>): List<Long>
 
     @Update
@@ -33,7 +33,7 @@ interface ScanDao {
     @Query("SELECT * FROM scans WHERE sync_status = 3 ORDER BY scanned_at DESC")
     suspend fun getReviewNeededScans(): List<ScanEntity>
 
-    @Query("UPDATE scans SET sync_status = 1, receivedAt = :receivedAt WHERE scan_id IN (:scanIds)")
+    @Query("UPDATE scans SET sync_status = 1, received_at = :receivedAt WHERE scan_id IN (:scanIds)")
     suspend fun markScansAsSynced(scanIds: List<String>, receivedAt: String)
 
     @Query("UPDATE scans SET sync_status = 2 WHERE scan_id IN (:scanIds)")
@@ -42,15 +42,27 @@ interface ScanDao {
     @Query("UPDATE scans SET sync_status = 0, answers = :updatedAnswers, student_code = :updatedStudentCode, flag = 'OK' WHERE scan_id = :scanId")
     suspend fun markScanAsReviewedAndReady(scanId: String, updatedStudentCode: String, updatedAnswers: String)
 
+    @Query("UPDATE scans SET sync_status = :syncStatus, answers = :answers, student_code = :studentCode, flag = :status WHERE scan_id = :scanId")
+    suspend fun updateReview(scanId: String, studentCode: String, answers: String, status: String, syncStatus: Int)
+
     @Query("SELECT * FROM scans ORDER BY scanned_at DESC")
     fun getAllScansFlow(): Flow<List<ScanEntity>>
 
+    @Query("SELECT * FROM scans ORDER BY scanned_at DESC")
+    fun observeAllScans(): Flow<List<ScanEntity>>
+
     @Query("SELECT COUNT(*) FROM scans WHERE sync_status = 0")
     fun getPendingCountFlow(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM scans WHERE sync_status = 0")
+    fun observePendingCount(): Flow<Int>
 
     @Query("SELECT COUNT(*) FROM scans WHERE sync_status = 3")
     fun getReviewNeededCountFlow(): Flow<Int>
 
     @Query("SELECT COUNT(*) FROM scans")
     fun getTotalCountFlow(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM scans")
+    fun observeTotalCount(): Flow<Int>
 }

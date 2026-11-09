@@ -27,7 +27,7 @@ import com.school.omrscanner.data.local.AppDatabase
 import com.school.omrscanner.data.local.ScanEntity
 import com.school.omrscanner.omr.*
 import com.school.omrscanner.sync.SyncWorker
-import com.school.omrscanner.template.TemplateModel
+import com.school.omrscanner.template.*
 import com.school.omrscanner.ui.ScannerOverlayView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -77,18 +77,34 @@ class CameraActivity : AppCompatActivity() {
 
     // Sample default 20-question template coordinate configuration
     private val defaultTemplate = TemplateModel(
+        templateId = "pom_default_20q",
+        version = "6.0.0",
         examId = "EXAM_001",
-        name = "Pom Grade Standard 20Q",
-        questionsCount = 20,
-        choicesCount = 4,
-        timingLeftBar = TemplateModel.TimingBarSpec(x = 10.0, yStart = 68.0, width = 5.0, height = 1.6, spacingY = 9.0),
-        timingRightBar = TemplateModel.TimingBarSpec(x = 195.0, yStart = 68.0, width = 3.0, height = 1.6, spacingY = 9.0),
-        studentIdGrid = TemplateModel.StudentIdSpec(xStart = 35.0, yStart = 30.0, digitSpacingX = 8.0, rowSpacingY = 5.5, bubbleRadius = 2.0),
+        examTitle = "Pom Grade 20Q Exam",
+        pageSize = PageSize(210.0, 297.0),
+        fiducials = FiducialsGroup(
+            topLeft = MarkerCoords(12.0, 12.0, 14.0, 14.0),
+            topRight = MarkerCoords(190.0, 12.0, 8.0, 8.0),
+            bottomRight = MarkerCoords(190.0, 277.0, 8.0, 8.0),
+            bottomLeft = MarkerCoords(12.0, 277.0, 8.0, 8.0)
+        ),
+        timingTracks = TimingTracksGroup(
+            leftBars = (0 until 20).map { r -> TimingBarCoords(r, 16.0, 105.0 + r * 7.8, 5.0, 1.6) },
+            rightBars = (0 until 20).map { r -> TimingBarCoords(r, 191.0, 105.0 + r * 7.8, 3.0, 1.6) }
+        ),
+        studentIdMatrix = StudentIdMatrix(
+            digits = 5,
+            columns = (0 until 5).map { c ->
+                (0..9).map { d -> BubbleCoords(d, 32.0 + c * 7.2, 40.0 + d * 5.4, 2.1) }
+            }
+        ),
         questions = (1..20).map { q ->
-            TemplateModel.QuestionSpec(
-                qNumber = q,
-                rowY = 68.0 + (q - 1) * 9.0,
-                choiceX = listOf(35.0, 47.0, 59.0, 71.0)
+            QuestionTemplate(
+                questionNumber = q,
+                rowIndex = (q - 1) % 20,
+                options = listOf("A", "B", "C", "D").mapIndexed { idx, ch ->
+                    OptionCoords(ch, 30.0 + idx * 8.0, 105.0 + ((q - 1) % 20) * 7.8, 2.3, 0.15 + idx * 0.20)
+                }
             )
         }
     )
@@ -204,7 +220,7 @@ class CameraActivity : AppCompatActivity() {
         Utils.bitmapToMat(bitmap, mat)
 
         val markerDetector = MarkerDetector()
-        val detectionResult = markerDetector.detectCornersAndOrientation(mat)
+        val detectionResult = markerDetector.processFrame(mat)
 
         if (detectionResult == null) {
             runOnUiThread {
@@ -228,86 +244,79 @@ class CameraActivity : AppCompatActivity() {
 
         lifecycleScope.launch(Dispatchers.Default) {
             try {
-                // 1. Warp perspective to standard 1000x1414
-                val warpedMat = markerDetector.warpToStandard(mat, detectionResult)
+                // 1. Get warped canonical Mat from detection result
+                val warpedMat = detectionResult.warpedCanonical
                 mat.release()
 
-                // 2. Detect Dual-Sided Timing Tracks
+                // 2. Extract Dual-Sided Timing Tracks
                 val timingDetector = TimingTrackDetector()
-                val timingResult = timingDetector.detectTimingTracks(
-                    warpedMat,
-                    defaultTemplate.questionsCount,
-                    expectedLeftX = 50.0,  // Standard 1000x1414 scale coordinates
-                    expectedRightX = 950.0,
-                    yStart = 330.0,
-                    ySpacing = 43.0
-                )
+                val timingResult = timingDetector.extractTimingTracks(warpedMat, defaultTemplate)
 
                 // 3. Scanline Interpolator
-                val interpolator = ScanlineInterpolator(
-                    timingResult.leftCentroids,
-                    timingResult.rightCentroids
-                )
+                val interpolator = ScanlineInterpolator()
 
                 // 4. Bubble Evaluator
                 val evaluator = BubbleEvaluator()
 
+                // Scale factors: mm to canonical pixel (1000 x 1414)
+                val scaleX = MarkerDetector.CANONICAL_WIDTH / defaultTemplate.pageSize.widthMm
+                val scaleY = MarkerDetector.CANONICAL_HEIGHT / defaultTemplate.pageSize.heightMm
+
                 // Evaluate 5-digit Student ID
+                val studentIdCols = defaultTemplate.studentIdMatrix.columns.map { col ->
+                    col.map { b -> Point(b.xMm * scaleX, b.yMm * scaleY) }
+                }
                 val studentIdResult = evaluator.evaluateStudentIdGrid(
-                    warpedMat,
-                    xStart = 160.0,
-                    yStart = 145.0,
-                    digitSpacingX = 38.0,
-                    rowSpacingY = 26.0,
-                    radius = 9.0
+                    canonicalGrayMat = warpedMat,
+                    columns = studentIdCols
                 )
 
                 // Evaluate Questions
-                val answerChars = mutableListOf<Char>()
-                var uncertainCount = 0
-
-                for (qIdx in 0 until defaultTemplate.questionsCount) {
-                    val choiceNormT = listOf(0.18, 0.24, 0.30, 0.36) // normalized x-positions across left/right
-                    val rowResult = evaluator.evaluateQuestionRow(
-                        warpedMat,
-                        interpolator,
-                        rowIndex = qIdx,
-                        choiceNormT = choiceNormT,
-                        radius = 9.0
-                    )
-                    answerChars.add(rowResult.selectedChoice)
-                    if (rowResult.selectedChoice == '?') {
-                        uncertainCount++
+                val questionEvals = mutableListOf<BubbleEvaluator.QuestionEvaluation>()
+                for (qTemplate in defaultTemplate.questions) {
+                    val track = timingResult.tracks.getOrNull(qTemplate.rowIndex)
+                    val bubbleCenters = if (track != null) {
+                        qTemplate.options.map { opt ->
+                            interpolator.interpolate(track, opt.tOffset)
+                        }
+                    } else {
+                        qTemplate.options.map { opt ->
+                            Point(opt.xMm * scaleX, opt.yMm * scaleY)
+                        }
                     }
+                    val qEval = evaluator.evaluateQuestion(
+                        canonicalGrayMat = warpedMat,
+                        questionNumber = qTemplate.questionNumber,
+                        bubbleCenters = bubbleCenters,
+                        choiceLabels = qTemplate.options.map { it.choice }
+                    )
+                    questionEvals.add(qEval)
                 }
 
                 warpedMat.release()
 
                 val encoder = AnswerEncoder()
-                val answersRaw = encoder.encode(answerChars)
-                val statusFlag = encoder.determineStatusFlag(answersRaw, studentIdResult.isValid)
+                val encodedResult = encoder.encode(studentIdResult, questionEvals, timingResult)
+                val answersRaw = encodedResult.answersString
+                val statusFlag = encodedResult.statusFlag
 
                 // Calculate preliminary score against answer key if known
                 val score = calculateScore(answersRaw)
-                val maxScore = defaultTemplate.questionsCount.toDouble()
-
-                val nowIso = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
-                    timeZone = TimeZone.getTimeZone("UTC")
-                }.format(Date())
+                val maxScore = defaultTemplate.questions.size.toDouble()
 
                 val scanId = UUID.randomUUID().toString()
                 val syncStatus = if (statusFlag == "NEEDS_REVIEW" || !studentIdResult.isValid) 3 else 0
 
                 val scanEntity = ScanEntity(
                     scanId = scanId,
-                    scannedAt = nowIso,
+                    scannedAt = System.currentTimeMillis(),
                     deviceId = deviceId,
                     examId = currentExamId,
-                    studentCode = studentIdResult.studentId,
+                    studentCode = studentIdResult.studentId ?: "00000",
                     score = score,
                     maxScore = maxScore,
                     answers = answersRaw,
-                    status = statusFlag,
+                    flag = statusFlag,
                     syncStatus = syncStatus
                 )
 
@@ -325,7 +334,7 @@ class CameraActivity : AppCompatActivity() {
                     tvSessionCount.text = "สแกนในรอบนี้: $sessionScannedCount แผ่น"
                     scannerOverlay.setState(ScannerOverlayView.State.SUCCESS)
 
-                    tvLastStudentId.text = "รหัสนักเรียน: ${studentIdResult.studentId}"
+                    tvLastStudentId.text = "รหัสนักเรียน: ${studentIdResult.studentId ?: "รอตรวจสอบ"}"
                     tvLastScore.text = "คำตอบ: $answersRaw | สถานะ: $statusFlag"
                     cardLastResult.visibility = View.VISIBLE
 

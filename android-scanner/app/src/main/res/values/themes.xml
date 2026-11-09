@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.PomGradeOMR" parent="Theme.Material3.Light.NoActionBar">
+    <style name="Theme.PomGrade" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorOnPrimary">@color/on_primary</item>
         <item name="colorSecondary">@color/secondary</item>
@@ -11,5 +11,6 @@
         <item name="android:statusBarColor">@color/primary</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
+    <style name="Theme.PomGradeOMR" parent="Theme.PomGrade" />
 </resources>
 

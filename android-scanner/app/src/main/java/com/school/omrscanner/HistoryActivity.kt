@@ -102,7 +102,8 @@ class HistoryActivity : AppCompatActivity() {
             fun bind(scan: ScanEntity) {
                 tvStudentId.text = "รหัส: ${scan.studentCode}"
                 tvScore.text = "${scan.score.toInt()} / ${scan.maxScore.toInt()}"
-                tvScannedAt.text = scan.scannedAt
+                val dateFormat = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss", java.util.Locale.getDefault())
+                tvScannedAt.text = dateFormat.format(java.util.Date(scan.scannedAt))
                 tvScanUuid.text = "ID: ${scan.scanId}"
 
                 when (scan.syncStatus) {

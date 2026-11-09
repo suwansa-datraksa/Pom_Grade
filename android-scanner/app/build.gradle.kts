@@ -88,9 +88,11 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:$okhttpVersion")
     val retrofitVersion = "2.9.0"
     implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
+    implementation("com.squareup.retrofit2:converter-gson:$retrofitVersion")
     implementation("com.squareup.retrofit2:converter-moshi:$retrofitVersion")
     val moshiVersion = "1.15.0"
     implementation("com.squareup.moshi:moshi-kotlin:$moshiVersion")
+    implementation("com.google.code.gson:gson:2.10.1")
 
     // Google Auth
     implementation("com.google.android.gms:play-services-auth:21.0.0")

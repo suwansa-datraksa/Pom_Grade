@@ -56,6 +56,9 @@ cd "E:\Pom\Code\Pom Grade\android-scanner"
 ```text
 android-scanner/app/build/outputs/apk/debug/app-debug.apk
 ```
+> ⭐ **ไฟล์ APK พร้อมติดตั้งสำหรับคุณครู:**  
+> ระบบได้ทำการคอมไพล์และคัดลอกไฟล์มาไว้ให้ที่โฟลเดอร์หลักของโปรเจกต์แล้ว สามารถเปิดนำไปติดตั้งลงโทรศัพท์ได้ทันทีที่:  
+> `E:\Pom\Code\Pom Grade\PomGrade_v1.0.0_debug.apk`
 
 ---
 
@@ -142,3 +145,4 @@ android-scanner/app/build/outputs/apk/release/app-release.apk
 ---
 
 > **เสร็จสิ้นขั้นตอนที่ 5** ยินดีด้วยครับ! ระบบ Pom Grade พร้อมสำหรับการตรวจข้อสอบภาคสนามจริงอย่างสมบูรณ์แบบแล้วครับ
+

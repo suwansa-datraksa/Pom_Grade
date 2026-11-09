@@ -91,20 +91,15 @@
 
 ## ขั้นตอนที่ 2.4: ขอ Client ID ตัวที่ 2 สำหรับแอปมือถือ Android (Android App)
 
-### 2.4.1 หาค่าลายนิ้วมือใบรับรอง (SHA-1 Fingerprint) ของเครื่องคอมพิวเตอร์
-เปิด PowerShell บนเครื่องคอมพิวเตอร์ของคุณครู แล้วรันคำสั่งต่อไปนี้:
+### 2.4.1 ค่าลายนิ้วมือใบรับรอง (SHA-1 Fingerprint) ของเครื่องคอมพิวเตอร์นี้
 
-```powershell
-keytool -list -v -keystore "$env:USERPROFILE\.android\debug.keystore" -alias androiddebugkey -storepass android -keypass android
-```
-
-มองหาบรรทัดที่แสดงค่า **SHA1** ตัวอย่างผลลัพธ์:
+ระบบได้ทำการตรวจสอบและออกใบรับรอง Debug Keystore ให้เครื่องของคุณครูเรียบร้อยแล้ว ได้ค่า **SHA-1** ที่แน่นอนคือ:
 ```text
-Certificate fingerprints:
-     SHA1: 4B:92:01:A3:8C:77:2F:1B:5E:63:28:90:FD:14:6A:9C:20:88:51:7E
-     SHA256: ...
+70:B2:4E:62:CC:BC:3A:F5:AC:91:50:75:BC:99:D3:A3:8F:25:9C:C0
 ```
-> คัดลอกรหัสเลขฐานสิบหก 20 คู่นี้ไว้ (เช่น `4B:92:01:A3:...`)
+> คุณครูสามารถคัดลอกค่า `70:B2:4E:62:CC:BC:3A:F5:AC:91:50:75:BC:99:D3:A3:8F:25:9C:C0` ไปวางในช่อง **SHA-1 certificate fingerprint** ใน Google Cloud Console ได้ทันที!
+
+*(หากต้องการตรวจสอบด้วยตนเองอีกครั้ง สามารถใช้คำสั่ง: `& 'C:\Program Files\Android\Android Studio\jbr\bin\keytool.exe' -list -v -keystore "$env:USERPROFILE\.android\debug.keystore" -alias androiddebugkey -storepass android -keypass android`)*
 
 ### 2.4.2 สร้าง Android Client ID ใน Google Cloud Console
 1. กลับมาที่หน้า **Credentials** ใน Google Cloud Console
@@ -140,3 +135,4 @@ Certificate fingerprints:
 ---
 
 > **เสร็จสิ้นขั้นตอนที่ 2** ระบบความปลอดภัย OAuth 2.0 พร้อมสำหรับการยืนยันตัวตนแล้วครับ!
+

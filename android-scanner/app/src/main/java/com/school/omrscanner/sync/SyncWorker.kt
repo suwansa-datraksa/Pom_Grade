@@ -205,6 +205,10 @@ class SyncWorker(
 
             WorkManager.getInstance(context).enqueue(syncRequest)
         }
+
+        fun enqueueImmediateSync(context: Context) {
+            scheduleSync(context)
+        }
     }
 }
 

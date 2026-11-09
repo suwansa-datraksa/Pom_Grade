@@ -6,10 +6,13 @@ yarn-error.log*
 
 # Android / Gradle
 .gradle/
+**/build/
 build/
 *.iml
 .idea/
+.vscode/
 local.properties
+*.apk
 .DS_Store
 
 # Logs & Temp
