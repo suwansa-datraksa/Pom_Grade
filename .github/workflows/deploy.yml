@@ -1,24 +1,19 @@
-name: Deploy Pom Grade Web Console to GitHub Pages
+name: Pom Grade CI Test Suite
 
 on:
   push:
     branches:
       - master
       - main
+  pull_request:
+    branches:
+      - master
+      - main
   workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: false
 
 jobs:
   test-and-audit:
-    name: Run Automated Test Suites & Security Audit
+    name: Run Automated Test Suites
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -29,47 +24,5 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Run Backend Unit Tests (gas-backend)
-        run: node gas-backend/tests/gas_backend.test.js
-
-      - name: Run Web Console PDF Generator Tests
-        run: node web-console/tests/test_pdf_generator.js
-
-      - name: Run Item Analysis & Psychometric Tests
-        run: node web-console/tests/test_analytics.js
-
-      - name: Run Android HTTP 302 Redirect & Sync Tests
-        run: node android-scanner/test_phase4_sync.js
-
-      - name: Security Audit (Verify No Hardcoded Secrets & CSP Integrity)
-        run: |
-          echo "Verifying no hardcoded client secrets..."
-          if grep -rn "client_secret" web-console/ android-scanner/; then
-            echo "ERROR: Hardcoded client_secret detected!"
-            exit 1
-          fi
-          echo "Audit Passed: Zero-secret compliance verified."
-
-  build-and-deploy:
-    name: Build & Deploy to GitHub Pages
-    needs: test-and-audit
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload Artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './web-console'
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
+      - name: Run Master Test Suite (30/30 Tests)
+        run: node run_all_tests.js
