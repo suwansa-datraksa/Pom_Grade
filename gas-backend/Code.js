@@ -497,7 +497,11 @@ function seedInitialDataIfEmpty_(ss) {
   let keysSh = ss.getSheetByName(SHEET_KEYS) || ss.getSheetByName(SHEET_EXAMS);
   if (!keysSh) {
     keysSh = ss.insertSheet(SHEET_KEYS);
-    keysSh.appendRow(['ExamID', 'Key', 'Weights']);
+  }
+  if (keysSh.getLastRow() < 2) {
+    if (keysSh.getLastRow() === 0) {
+      keysSh.appendRow(['ExamID', 'Key', 'Weights']);
+    }
     keysSh.appendRow(['EXAM_001', 'ABCDABCDABCDABCDABCD', '1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1']);
     keysSh.appendRow(['PHYS40-2026A', 'ABCDABCDABCDABCDABCD', '1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1']);
     seeded = true;
@@ -507,7 +511,11 @@ function seedInitialDataIfEmpty_(ss) {
   let studSh = ss.getSheetByName(SHEET_STUDENTS);
   if (!studSh) {
     studSh = ss.insertSheet(SHEET_STUDENTS);
-    studSh.appendRow(['StudentID', 'Name', 'Classroom', 'SeatNo']);
+  }
+  if (studSh.getLastRow() < 2) {
+    if (studSh.getLastRow() === 0) {
+      studSh.appendRow(['StudentID', 'Name', 'Classroom', 'SeatNo']);
+    }
     studSh.appendRow(['10001', 'นายสมชาย ใจดี', 'ม.5/1', 1]);
     studSh.appendRow(['10002', 'นางสาวสมหญิง ศรีสยาม', 'ม.5/1', 2]);
     studSh.appendRow(['10003', 'นายณัฐวุฒิ สิทธิโชค', 'ม.5/1', 3]);
