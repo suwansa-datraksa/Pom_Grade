@@ -11,7 +11,7 @@
 
   const CONFIG = {
     SPREADSHEET_ID: '1KcL20IBw5r36ODy9lcsBal6SmeZ9rRitctotZfwJKH4',
-    DEFAULT_CLIENT_ID: '407408718192.apps.googleusercontent.com',
+    DEFAULT_CLIENT_ID: '285757563070-3v143kq009v52lf6mstvtmbi4i5g5l9i.apps.googleusercontent.com',
     PASSING_PERCENT: 50.0,
     CREDIT: 'จัดทำโดย ครูสุวรรณษา เดชรักษา'
   };
