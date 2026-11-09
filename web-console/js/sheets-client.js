@@ -23,46 +23,71 @@
         throw new Error('Spreadsheet ID and access token are required');
       }
 
-      const ranges = [
-        'Raw_Scans!A1:J',
-        'Students!A1:D',
-        'Protected_Keys!A1:D'
-      ];
-      const rangesParam = ranges.map(r => `ranges=${encodeURIComponent(r)}`).join('&');
-      const url = `${SHEETS_API_BASE}/${spreadsheetId}/values:batchGet?${rangesParam}&valueRenderOption=UNFORMATTED_VALUE`;
-
-      const response = await fetch(url, {
+      // 1. Fetch metadata to inspect which sheets exist, preventing 400 Unable to parse range
+      const metaUrl = `${SHEETS_API_BASE}/${spreadsheetId}?fields=sheets.properties.title`;
+      const metaRes = await fetch(metaUrl, {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Accept': 'application/json'
         }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const msg = errorData.error ? errorData.error.message : `HTTP ${response.status} ${response.statusText}`;
+      if (!metaRes.ok) {
+        const errorData = await metaRes.json().catch(() => ({}));
+        const msg = errorData.error ? errorData.error.message : `HTTP ${metaRes.status} ${metaRes.statusText}`;
         throw new Error(`Sheets API Error: ${msg}`);
       }
 
-      const data = await response.json();
-      const valueRanges = data.valueRanges || [];
+      const metaData = await metaRes.json();
+      const existingTitles = new Set((metaData.sheets || []).map(s => s.properties && s.properties.title));
 
-      const rawScansValues = (valueRanges[0] && valueRanges[0].values) ? valueRanges[0].values : [];
-      const studentsValues = (valueRanges[1] && valueRanges[1].values) ? valueRanges[1].values : [];
-      const keysValues = (valueRanges[2] && valueRanges[2].values) ? valueRanges[2].values : [];
+      const targetSheets = [
+        { name: 'Raw_Scans', range: 'Raw_Scans!A1:J' },
+        { name: 'Students', range: 'Students!A1:D' },
+        { name: 'Protected_Keys', range: 'Protected_Keys!A1:D' }
+      ];
 
-      const rawScans = this.parseRawScans(rawScansValues);
-      const students = this.parseStudents(studentsValues);
-      const answerKeys = this.parseProtectedKeys(keysValues);
+      const availableTargets = targetSheets.filter(t => existingTitles.has(t.name));
+
+      let rawScans = [];
+      let students = [];
+      let answerKeys = [];
+
+      if (availableTargets.length > 0) {
+        const rangesParam = availableTargets.map(t => `ranges=${encodeURIComponent(t.range)}`).join('&');
+        const url = `${SHEETS_API_BASE}/${spreadsheetId}/values:batchGet?${rangesParam}&valueRenderOption=UNFORMATTED_VALUE`;
+
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const valueRanges = data.valueRanges || [];
+
+          availableTargets.forEach((target, idx) => {
+            const vals = (valueRanges[idx] && valueRanges[idx].values) ? valueRanges[idx].values : [];
+            if (target.name === 'Raw_Scans') rawScans = this.parseRawScans(vals);
+            if (target.name === 'Students') students = this.parseStudents(vals);
+            if (target.name === 'Protected_Keys') answerKeys = this.parseProtectedKeys(vals);
+          });
+        }
+      }
 
       // Resolve latest scans per (ExamID, StudentCode)
       const latestScansMap = this.groupLatestScans(rawScans);
+
+      const missingSheets = targetSheets.map(t => t.name).filter(name => !existingTitles.has(name));
 
       return {
         rawScans,
         students,
         answerKeys,
         latestScansMap,
+        missingSheets,
         fetchedAt: new Date().toISOString()
       };
     },
