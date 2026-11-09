@@ -76,6 +76,39 @@ const TEMPLATE_CONFIG = {
       rowHeight: 7.8,
       choiceSpacing: 7.5
     }
+  },
+
+  /**
+   * Generates custom dynamic preset configuration for any number of questions,
+   * choices, and columns with automated geometric fitting for A4.
+   */
+  createCustomPreset(questions = 40, choicesCount = 4, columns = 2) {
+    const qCount = Math.max(1, Math.min(100, parseInt(questions, 10) || 40));
+    const cCount = Math.max(2, Math.min(6, parseInt(choicesCount, 10) || 4));
+    const colCount = Math.max(1, Math.min(3, parseInt(columns, 10) || 2));
+
+    const allChoices = ['A', 'B', 'C', 'D', 'E', 'F'];
+    const choices = allChoices.slice(0, cCount);
+    const rowsPerCol = Math.ceil(qCount / colCount);
+
+    // Calculate vertical scaling: available height between Y=104mm and Y=276mm (172mm available)
+    const availableHeightMm = 172.0;
+    const computedRowHeight = Math.min(8.5, Math.max(5.0, availableHeightMm / rowsPerCol));
+
+    // Calculate horizontal choice spacing based on column width
+    // Printable width ~168mm across columns
+    const colWidthMm = 168.0 / colCount;
+    const availableChoiceWidth = colWidthMm - 14.0;
+    const computedChoiceSpacing = Math.min(9.5, Math.max(5.5, availableChoiceWidth / (cCount - 1 || 1)));
+
+    return {
+      questions: qCount,
+      choices: choices,
+      columns: colCount,
+      startY: 104.0,
+      rowHeight: parseFloat(computedRowHeight.toFixed(2)),
+      choiceSpacing: parseFloat(computedChoiceSpacing.toFixed(2))
+    };
   }
 };
 

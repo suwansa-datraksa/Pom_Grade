@@ -8,13 +8,13 @@
   <!-- Google Fonts: Sarabun & Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- jsPDF Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <!-- App Stylesheet -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -74,7 +74,46 @@
               <option value="40_QUESTIONS_4_CHOICES" selected>40 ข้อ (4 ตัวเลือก: A, B, C, D) — 2 คอลัมน์ (แนะนำ)</option>
               <option value="60_QUESTIONS_4_CHOICES">60 ข้อ (4 ตัวเลือก: A, B, C, D) — 2 คอลัมน์ความหนาแน่นสูง</option>
               <option value="40_QUESTIONS_5_CHOICES">40 ข้อ (5 ตัวเลือก: A, B, C, D, E) — 2 คอลัมน์</option>
+              <option value="CUSTOM">✨ กำหนดเองแบบอิสระ (Custom Layout)...</option>
             </select>
+          </div>
+
+          <!-- Dynamic Custom Layout Controls (Shown when CUSTOM is selected) -->
+          <div id="customControlsBox" style="display: none; margin-bottom: 16px; padding: 14px 16px; background: #F1F5F9; border: 1px solid #CBD5E1; border-radius: 10px;">
+            <div style="font-size: 13px; font-weight: 700; color: #1E3A8A; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
+              <span>🛠️ กำหนดโครงสร้างกระดาษคำตอบอิสระ</span>
+              <span class="badge" id="customLiveSummaryBadge" style="background: #DBEAFE; color: #1E40AF; font-size: 11px;">50 ข้อ | 4 ตัวเลือก | 2 คอลัมน์</span>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="customQuestions" style="font-size: 12px; font-weight: 600;">จำนวนข้อ (1-100)</label>
+                <input type="number" id="customQuestions" class="input-text" min="1" max="100" value="50" style="padding: 7px 10px; font-size: 13px;">
+              </div>
+              
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="customChoices" style="font-size: 12px; font-weight: 600;">จำนวนตัวเลือก</label>
+                <select id="customChoices" class="select-dropdown" style="padding: 7px 10px; font-size: 13px;">
+                  <option value="3">3 ตัวเลือก (A-C)</option>
+                  <option value="4" selected>4 ตัวเลือก (A-D)</option>
+                  <option value="5">5 ตัวเลือก (A-E)</option>
+                  <option value="6">6 ตัวเลือก (A-F)</option>
+                </select>
+              </div>
+              
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="customColumns" style="font-size: 12px; font-weight: 600;">จำนวนคอลัมน์</label>
+                <select id="customColumns" class="select-dropdown" style="padding: 7px 10px; font-size: 13px;">
+                  <option value="1">1 คอลัมน์</option>
+                  <option value="2" selected>2 คอลัมน์</option>
+                  <option value="3">3 คอลัมน์</option>
+                </select>
+              </div>
+            </div>
+            
+            <div style="margin-top: 10px; font-size: 11px; color: #475569; line-height: 1.4;" id="customLayoutDescription">
+              ระบบจัดวางอัตโนมัติ: ความสูงแถว 6.88 mm | วงกลมตัวเลือก 2.3 mm | พอดีหน้า A4 100%
+            </div>
           </div>
 
           <!-- Specification Summary Box -->
@@ -162,22 +201,54 @@
       const inputSchoolName = document.getElementById('inputSchoolName');
       const selectPreset = document.getElementById('selectPreset');
 
+      // Custom Controls
+      const customControlsBox = document.getElementById('customControlsBox');
+      const customQuestions = document.getElementById('customQuestions');
+      const customChoices = document.getElementById('customChoices');
+      const customColumns = document.getElementById('customColumns');
+      const customLiveSummaryBadge = document.getElementById('customLiveSummaryBadge');
+      const customLayoutDescription = document.getElementById('customLayoutDescription');
+
       const btnDownloadPdf = document.getElementById('btnDownloadPdf');
       const btnExportJson = document.getElementById('btnExportJson');
       const btnValidateSchema = document.getElementById('btnValidateSchema');
       const validationBox = document.getElementById('validationResultBox');
 
-      // Update SVG Preview
-      function updatePreview() {
+      function getOptions() {
         const examId = inputExamId.value.trim() || 'EXAM_001';
-        const examTitle = inputExamTitle.value.trim() || 'แบบทดสอบมาตรฐาน';
-        const schoolName = inputSchoolName.value.trim() || 'โรงเรียนมาตรฐาน';
+        const examTitle = inputExamTitle.value.trim() || 'แบบทดสอบวัดผลการเรียนรู้มาตรฐาน';
+        const schoolName = inputSchoolName.value.trim() || 'โรงเรียนมาตรฐานวิทยาคาร';
         const presetKey = selectPreset.value;
 
-        const { metadata } = generator.generateSheet({
-          examId, examTitle, schoolName, presetKey
-        });
+        const options = { examId, examTitle, schoolName, presetKey };
 
+        if (presetKey === 'CUSTOM') {
+          const qCount = Math.max(1, Math.min(100, parseInt(customQuestions.value, 10) || 50));
+          const cCount = Math.max(3, Math.min(6, parseInt(customChoices.value, 10) || 4));
+          const colCount = Math.max(1, Math.min(3, parseInt(customColumns.value, 10) || 2));
+
+          const customConfig = TEMPLATE_CONFIG.createCustomPreset(qCount, cCount, colCount);
+          options.customConfig = customConfig;
+
+          // Update UI badge & description
+          if (customLiveSummaryBadge) {
+            customLiveSummaryBadge.textContent = `${qCount} ข้อ | ${cCount} ตัวเลือก | ${colCount} คอลัมน์`;
+          }
+          if (customLayoutDescription) {
+            const rowsPerCol = Math.ceil(qCount / colCount);
+            customLayoutDescription.textContent = `ระบบจัดวางอัตโนมัติ: ${rowsPerCol} แถว/คอลัมน์ | ความสูงแถว ${customConfig.rowHeight} mm | ระยะห่างตัวเลือก ${customConfig.choiceSpacing} mm | จัดวางพอดีหน้า A4 100%`;
+          }
+        }
+        return options;
+      }
+
+      // Update SVG Preview
+      function updatePreview() {
+        const isCustom = selectPreset.value === 'CUSTOM';
+        customControlsBox.style.display = isCustom ? 'block' : 'none';
+
+        const options = getOptions();
+        const { metadata } = generator.generateSheet(options);
         renderSvgPreview(metadata);
       }
 
@@ -275,9 +346,25 @@
           svg.appendChild(r);
         });
 
-        // 5. Question Bubbles
+        // 5. Question Bubbles & Question Numbers
         meta.questions.forEach(q => {
+          const firstOpt = q.options[0];
+          if (firstOpt) {
+            // Render question number beside the first bubble
+            const isDense = firstOpt.radius_mm < 2.1;
+            const qNum = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            qNum.setAttribute('x', (firstOpt.x_mm - (isDense ? 4.5 : 5.5)).toFixed(1));
+            qNum.setAttribute('y', (firstOpt.y_mm + (isDense ? 0.7 : 0.9)).toFixed(1));
+            qNum.setAttribute('font-size', isDense ? '2.1' : '2.5');
+            qNum.setAttribute('font-weight', 'bold');
+            qNum.setAttribute('text-anchor', 'end');
+            qNum.setAttribute('fill', '#1E3A8A');
+            qNum.textContent = String(q.question_number);
+            svg.appendChild(qNum);
+          }
+
           q.options.forEach(opt => {
+            const isDense = opt.radius_mm < 2.1;
             const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
             c.setAttribute('cx', opt.x_mm);
             c.setAttribute('cy', opt.y_mm);
@@ -289,8 +376,8 @@
 
             const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
             t.setAttribute('x', opt.x_mm);
-            t.setAttribute('y', opt.y_mm + 0.9);
-            t.setAttribute('font-size', '2.4');
+            t.setAttribute('y', opt.y_mm + (isDense ? 0.7 : 0.9));
+            t.setAttribute('font-size', isDense ? '2.0' : '2.4');
             t.setAttribute('text-anchor', 'middle');
             t.setAttribute('fill', '#555555');
             t.textContent = opt.choice;
@@ -312,35 +399,22 @@
 
       // Download PDF Button
       btnDownloadPdf.addEventListener('click', () => {
-        const examId = inputExamId.value.trim() || 'EXAM_001';
-        const examTitle = inputExamTitle.value.trim() || 'แบบทดสอบมาตรฐาน';
-        const schoolName = inputSchoolName.value.trim() || 'โรงเรียนมาตรฐาน';
-        const presetKey = selectPreset.value;
-
-        const { doc } = generator.generateSheet({
-          examId, examTitle, schoolName, presetKey
-        });
-
-        doc.save(`OMR_Sheet_${examId}.pdf`);
+        const options = getOptions();
+        const { doc } = generator.generateSheet(options);
+        doc.save(`OMR_Sheet_${options.examId}.pdf`);
       });
 
       // Export Coordinates JSON Button
       btnExportJson.addEventListener('click', () => {
-        const examId = inputExamId.value.trim() || 'EXAM_001';
-        const examTitle = inputExamTitle.value.trim() || 'แบบทดสอบมาตรฐาน';
-        const schoolName = inputSchoolName.value.trim() || 'โรงเรียนมาตรฐาน';
-        const presetKey = selectPreset.value;
-
-        const { metadata } = generator.generateSheet({
-          examId, examTitle, schoolName, presetKey
-        });
+        const options = getOptions();
+        const { metadata } = generator.generateSheet(options);
 
         const jsonStr = JSON.stringify(metadata, null, 2);
         const blob = new Blob([jsonStr], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `template_coords_${examId.toLowerCase()}.json`;
+        a.download = `template_coords_${options.examId.toLowerCase()}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -349,29 +423,27 @@
 
       // Validate Schema Button
       btnValidateSchema.addEventListener('click', () => {
-        const examId = inputExamId.value.trim() || 'EXAM_001';
-        const examTitle = inputExamTitle.value.trim() || 'แบบทดสอบมาตรฐาน';
-        const schoolName = inputSchoolName.value.trim() || 'โรงเรียนมาตรฐาน';
-        const presetKey = selectPreset.value;
-
-        const { metadata } = generator.generateSheet({
-          examId, examTitle, schoolName, presetKey
-        });
+        const options = getOptions();
+        const { metadata } = generator.generateSheet(options);
 
         const validation = OmrPdfGenerator.validateMetadata(metadata);
         validationBox.classList.remove('hidden');
 
         if (validation.valid) {
+          const firstQ = metadata.questions[0];
+          const choiceStr = firstQ ? firstQ.options.map(o => o.choice).join(', ') : 'A-D';
+          const numCols = metadata.questions.length > 0 ? (metadata.questions[metadata.questions.length - 1].column_index + 1) : 1;
+
           validationBox.className = 'validation-box success';
           validationBox.innerHTML = `
             <strong>✅ พิกัดถูกต้องสมบูรณ์ (100% Validated):</strong>
             <ul>
               <li>Top-Left Fiducial: ${metadata.fiducials.top_left.width_mm}x${metadata.fiducials.top_left.height_mm} mm (ตรงตามสเปก 14x14 mm)</li>
               <li>Other Fiducials: 8x8 mm (ครบทั้ง 3 มุม)</li>
-              <li>Left Timing Bars: 5.0x1.6 mm (ตรงกึ่งกลางแถว)</li>
-              <li>Right Timing Bars: 3.0x1.6 mm (ตรงกึ่งกลางแถว)</li>
+              <li>Left Timing Bars: 5.0x1.6 mm (ตรงกึ่งกลางแถว ${metadata.timing_tracks.left_bars.length} แถว)</li>
+              <li>Right Timing Bars: 3.0x1.6 mm (ตรงกึ่งกลางแถว ${metadata.timing_tracks.right_bars.length} แถว)</li>
               <li>Student ID Matrix: 5 หลัก ครบทุกตำแหน่ง</li>
-              <li>Questions: ${metadata.questions.length} ข้อ ตัวเลือก A-D ขอบสี #666666</li>
+              <li>Questions: ${metadata.questions.length} ข้อ ตัวเลือก [${choiceStr}] (${numCols} คอลัมน์)</li>
             </ul>
           `;
         } else {
@@ -386,9 +458,11 @@
       });
 
       // Event listeners for real-time preview updates
-      [inputExamId, inputExamTitle, inputSchoolName, selectPreset].forEach(el => {
-        el.addEventListener('input', updatePreview);
-        el.addEventListener('change', updatePreview);
+      [inputExamId, inputExamTitle, inputSchoolName, selectPreset, customQuestions, customChoices, customColumns].forEach(el => {
+        if (el) {
+          el.addEventListener('input', updatePreview);
+          el.addEventListener('change', updatePreview);
+        }
       });
 
       // Initial Render
@@ -397,4 +471,3 @@
   </script>
 </body>
 </html>
-

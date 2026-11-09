@@ -34,7 +34,7 @@ class OmrPdfGenerator {
     const presetKey = options.presetKey || '40_QUESTIONS_4_CHOICES';
     const schoolName = options.schoolName || 'ระบบตรวจข้อสอบ OMR มาตรฐาน (v6)';
 
-    const preset = this.config.PRESETS[presetKey] || this.config.PRESETS['40_QUESTIONS_4_CHOICES'];
+    const preset = options.customConfig || this.config.PRESETS[presetKey] || this.config.PRESETS['40_QUESTIONS_4_CHOICES'];
 
     // Instantiate jsPDF: Unit in mm, Format A4 [210 x 297]
     const { jsPDF } = (typeof window !== 'undefined' && window.jspdf) ? window.jspdf : require('jspdf');
@@ -247,10 +247,10 @@ class OmrPdfGenerator {
     const choices = preset.choices;
     const numCols = preset.columns;
     const rowsPerCol = Math.ceil(numQuestions / numCols);
-    const startY = preset.startY;
-    const rowHeight = preset.rowHeight;
-    const choiceSpacing = preset.choiceSpacing;
-    const bubbleRadius = this.config.BUBBLES.RADIUS_MM;
+    const startY = preset.startY || 104.0;
+    const rowHeight = preset.rowHeight || 7.8;
+    const choiceSpacing = preset.choiceSpacing || 8.0;
+    const bubbleRadius = rowHeight < 6.0 ? 1.9 : this.config.BUBBLES.RADIUS_MM;
 
     const leftBarX = this.config.TIMING_TRACKS.MARGIN_LEFT_X_MM;
     const rightBarX = this.config.TIMING_TRACKS.MARGIN_RIGHT_X_MM;
@@ -292,19 +292,29 @@ class OmrPdfGenerator {
       });
     }
 
-    // Column horizontal start positions
-    const colStarts = numCols === 1 ? [28.0] : [26.0, 114.0];
+    // Dynamic column start positions based on numCols (1, 2, or 3 columns)
+    let colStarts = [];
+    if (numCols === 1) {
+      colStarts = [28.0];
+    } else if (numCols === 2) {
+      colStarts = [26.0, 114.0];
+    } else if (numCols === 3) {
+      colStarts = [23.0, 81.0, 139.0];
+    } else {
+      const step = 168.0 / numCols;
+      colStarts = Array.from({ length: numCols }, (_, i) => parseFloat((22.0 + i * step).toFixed(1)));
+    }
 
     // Draw Questions
     for (let q = 1; q <= numQuestions; q++) {
       const colIdx = Math.floor((q - 1) / rowsPerCol);
       const rowInCol = (q - 1) % rowsPerCol;
       const rowCenterY = startY + (rowInCol * rowHeight);
-      const colStartX = colStarts[colIdx];
+      const colStartX = colStarts[colIdx] || 26.0;
 
       // Question Number Label
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
+      doc.setFontSize(rowHeight < 6.0 ? 6.5 : 8);
       doc.setTextColor(30, 58, 138);
       doc.text(String(q).padStart(2, ' '), colStartX, rowCenterY + 1.0);
 
@@ -315,7 +325,7 @@ class OmrPdfGenerator {
       // Choice Bubbles
       for (let cIdx = 0; cIdx < choices.length; cIdx++) {
         const choiceLabel = choices[cIdx];
-        const bubbleX = colStartX + 9.0 + (cIdx * choiceSpacing);
+        const bubbleX = colStartX + (rowHeight < 6.0 ? 7.5 : 9.0) + (cIdx * choiceSpacing);
 
         doc.setDrawColor(102, 102, 102); // #666666
         doc.setFillColor(255, 255, 255);
@@ -323,9 +333,9 @@ class OmrPdfGenerator {
         doc.circle(bubbleX, rowCenterY, bubbleRadius, 'FD');
 
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(6.5);
+        doc.setFontSize(rowHeight < 6.0 ? 5.5 : 6.5);
         doc.setTextColor(85, 85, 85);
-        doc.text(choiceLabel, bubbleX - 1.0, rowCenterY + 0.9);
+        doc.text(choiceLabel, bubbleX - (rowHeight < 6.0 ? 0.8 : 1.0), rowCenterY + (rowHeight < 6.0 ? 0.7 : 0.9));
 
         // Calculate normalized t-offset between Left Track and Right Track
         const tOffset = (bubbleX - leftP.center_x_mm) / (rightP.center_x_mm - leftP.center_x_mm);
