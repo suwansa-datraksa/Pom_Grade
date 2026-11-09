@@ -42,3 +42,4 @@ server.listen(PORT, () => {
   console.log(`เว็บเซิร์ฟเวอร์พร้อมใช้งานที่: http://localhost:${PORT}/web-console/index.html`);
   console.log('กด Ctrl+C เพื่อหยุดการทำงาน');
 });
+
