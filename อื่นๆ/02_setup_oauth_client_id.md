@@ -118,16 +118,47 @@
 
 ## ขั้นตอนที่ 2.5: การนำ Client ID ไปใส่ในระบบ Pom Grade
 
-### 1. นำไปใส่ใน Web Console:
-* **วิธีที่ 1 (สะดวกที่สุด):** เปิดหน้าเว็บ `web-console/index.html` แล้วนำ Web Client ID ไปวางในช่องกรอก *"ระบุ Google OAuth 2.0 Client ID"* จากนั้นกดปุ่ม **บันทึก & เข้าสู่ระบบ**
-* **วิธีที่ 2 (ถาวร):** เปิดไฟล์ `web-console/js/app.js` แล้วแก้ไขค่าในบรรทัดที่ 14:
-  ```javascript
-  const CONFIG = {
-    SPREADSHEET_ID: '1KcL20IBw5r36ODy9lcsBal6SmeZ9rRitctotZfwJKH4',
-    DEFAULT_CLIENT_ID: '123456789012-abcdefgh.apps.googleusercontent.com', // วาง Client ID ของคุณครูตรงนี้
-    ...
-  };
-  ```
+### 1. นำไปใส่ใน Web Console (เลือกวิธีที่สะดวกได้เลยครับ):
+
+#### 🔹 วิธีที่ 1: กรอกผ่านหน้าเว็บโดยตรง (สะดวกที่สุด ไม่ต้องแตะโค้ด)
+1. เปิดไฟล์ `web-console/index.html` ด้วยโปรแกรมเว็บเบราว์เซอร์ (Google Chrome, Microsoft Edge) หรือเปิดผ่านลิงก์ GitHub Pages ของคุณครู:
+   ```text
+   https://suwansa-datraksa.github.io/Pom_Grade/web-console/index.html
+   ```
+2. บริเวณด้านบนใต้หัวข้อเว็บ จะมีกล่องแถบสีน้ำเงินเขียนว่า:
+   > 🔐 **การเข้าถึงข้อมูลแบบ Read-Only ด้วย Google Identity Services**
+3. ในกล่องนั้นจะมีช่องให้กรอกข้อความ:
+   * **ช่องข้อความ:** `ระบุ Google OAuth 2.0 Client ID (หรือใช้ค่าเริ่มต้นที่ตั้งไว้)`
+   * นำค่า **Web Client ID** ที่ได้จาก Google Cloud Console (เช่น `xxxxxxxxxxxx-xxxxxxxx.apps.googleusercontent.com`) วางลงในช่องนี้
+4. คลิกปุ่ม **"บันทึก & เข้าสู่ระบบ"**
+5. หน้าต่างป๊อปอัปของ Google จะเปิดขึ้นมา ให้คุณครูเลือกบัญชี Google $\to$ กดยินยอม $\to$ หน้าเว็บจะดึงผลคะแนนและสถิติจาก Google Sheets มาแสดงทันที
+   *(ระบบจะจดจำค่านี้ไว้ในเบราว์เซอร์อัตโนมัติ ครั้งต่อไปไม่ต้องกรอกซ้ำ)*
+
+---
+
+#### 🔹 วิธีที่ 2: แก้ไขในไฟล์โค้ด (ถาวร เหมาะสำหรับขึ้น GitHub Pages)
+วิธีนี้จะทำให้ Web Console มี Client ID ฝังเป็นค่าเริ่มต้นอัตโนมัติ ทุกคนที่เข้าเว็บจะไม่ต้องกรอก Client ID เองอีกต่อไป:
+1. เปิดไฟล์ [web-console/js/app.js](file:///e:/Pom/Code/Pom%20Grade/web-console/js/app.js) ด้วยโปรแกรมแก้ไขข้อความหรือ VS Code
+2. ดูที่บรรทัดที่ 14 ในส่วนการตั้งค่า `CONFIG`:
+   ```javascript
+   const CONFIG = {
+     SPREADSHEET_ID: '1KcL20IBw5r36ODy9lcsBal6SmeZ9rRitctotZfwJKH4',
+     DEFAULT_CLIENT_ID: '407408718192.apps.googleusercontent.com', // <--- แก้ไขบรรทัดนี้
+     PASSING_PERCENT: 50.0,
+     CREDIT: 'จัดทำโดย ครูสุวรรณษา เดชรักษา'
+   };
+   ```
+3. เปลี่ยนข้อความในเครื่องหมายคำพูดเดี่ยว `'...'` หลัง `DEFAULT_CLIENT_ID:` เป็น Client ID ของคุณครู เช่น:
+   ```javascript
+   DEFAULT_CLIENT_ID: '123456789012-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com',
+   ```
+4. บันทึกไฟล์ (Ctrl + S) แล้ว Push ขึ้น GitHub ได้ทันที
+
+---
+
+#### 🔹 วิธีที่ 3: ให้ผู้ช่วย AI ใส่ให้ทันที
+* คุณครูเพียงคัดลอกค่า **Web Client ID** ที่ได้จาก Google Cloud Console ส่งเข้ามาในแชทนี้
+* ผู้ช่วย AI จะนำไปใส่ลงในไฟล์โค้ดและทดสอบความถูกต้องให้โดยอัตโนมัติครับ
 
 ### 2. นำไปใส่ใน Android Scanner App:
 * สำหรับ Android คุณครู**ไม่ต้องแก้ไขโค้ดใดๆ** เนื่องจาก Google Play Services จะตรวจสอบชื่อ Package `com.school.omrscanner` คู่กับลายเซ็นใบรับรอง SHA-1 ของไฟล์ APK ในคลาวด์ให้อัตโนมัติเมื่อกดปุ่มลงชื่อเข้าใช้ในแอปมือถือ
