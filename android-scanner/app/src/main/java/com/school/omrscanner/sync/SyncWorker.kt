@@ -10,6 +10,7 @@ import androidx.core.app.NotificationCompat
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
+import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -41,13 +42,38 @@ class SyncWorker(
     workerParams: WorkerParameters
 ) : CoroutineWorker(appContext, workerParams) {
 
-    override suspend fun doWork(): Result {
-        val prefs = applicationContext.getSharedPreferences("pom_grade_settings", Context.MODE_PRIVATE)
-        val backendUrl = prefs.getString("backend_url", "") ?: ""
+    companion object {
+        const val DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbwOTILtFa1B5FHuaK7GtsQS6nQ0SaA1WBF627L0re3OZsWfOCdlcesDXlGRT7NjM21boA/exec"
+        private const val WORK_NAME = "PomGradeScanSyncWork"
+        private const val NOTIFICATION_CHANNEL_ID = "pom_grade_sync_channel"
+        private const val NOTIFICATION_ID = 2001
 
-        if (backendUrl.isBlank()) {
-            return Result.failure()
+        fun enqueueImmediateSync(context: Context) {
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+
+            val request = OneTimeWorkRequestBuilder<SyncWorker>()
+                .setConstraints(constraints)
+                .setBackoffCriteria(
+                    BackoffPolicy.EXPONENTIAL,
+                    15,
+                    TimeUnit.SECONDS
+                )
+                .build()
+
+            WorkManager.getInstance(context).enqueueUniqueWork(
+                WORK_NAME,
+                ExistingWorkPolicy.REPLACE,
+                request
+            )
         }
+    }
+
+    override suspend fun doWork(): Result {
+        val prefs = applicationContext.getSharedPreferences("pom_grade_prefs", Context.MODE_PRIVATE)
+        val backendUrl = prefs.getString("gas_backend_url", DEFAULT_GAS_URL)
+            ?.takeIf { it.isNotBlank() } ?: DEFAULT_GAS_URL
 
         val db = AppDatabase.getInstance(applicationContext)
         val dao = db.scanDao()
@@ -184,31 +210,6 @@ class SyncWorker(
 
             notificationManager.notify(1001, notification)
         } catch (_: Exception) {}
-    }
-
-    companion object {
-        const val WORK_NAME = "POM_GRADE_SYNC_WORK"
-
-        fun scheduleSync(context: Context) {
-            val constraints = Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build()
-
-            val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>()
-                .setConstraints(constraints)
-                .setBackoffCriteria(
-                    BackoffPolicy.EXPONENTIAL,
-                    15,
-                    TimeUnit.SECONDS
-                )
-                .build()
-
-            WorkManager.getInstance(context).enqueue(syncRequest)
-        }
-
-        fun enqueueImmediateSync(context: Context) {
-            scheduleSync(context)
-        }
     }
 }
 

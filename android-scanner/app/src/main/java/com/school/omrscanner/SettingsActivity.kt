@@ -80,10 +80,14 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
+    companion object {
+        const val DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbwOTILtFa1B5FHuaK7GtsQS6nQ0SaA1WBF627L0re3OZsWfOCdlcesDXlGRT7NjM21boA/exec"
+    }
+
     private fun loadSettings() {
         val prefs = getSharedPreferences("pom_grade_prefs", Context.MODE_PRIVATE)
         etExamId.setText(prefs.getString("current_exam_id", "EXAM_001"))
-        etBackendUrl.setText(prefs.getString("gas_backend_url", "https://script.google.com/macros/s/AKfycbyw.../exec"))
+        etBackendUrl.setText(prefs.getString("gas_backend_url", DEFAULT_GAS_URL))
         etDeviceId.setText(prefs.getString("device_id", "DEVICE_ANDROID_01"))
         switchSound.isChecked = prefs.getBoolean("feedback_sound", true)
         switchVibrate.isChecked = prefs.getBoolean("feedback_vibrate", true)
